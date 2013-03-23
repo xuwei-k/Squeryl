@@ -21,6 +21,7 @@ import dsl._
 import internals.FieldReferenceLinker
 import java.util.{ Date, UUID }
 import java.sql.Timestamp
+import org.joda.time.DateTime
 
 /**
  *  This factory is meant to use POSOs (Plain old Scala Objects),
@@ -66,6 +67,8 @@ trait PrimitiveTypeMode extends QueryDsl {
   type UuidType = UUID
 
   type BinaryType = Array[Byte]
+
+  type JodaDateTimeType = DateTime
 
   //TODO: consider spliting createLeafNodeOfScalarIntType in two factory methods : createConstantOfXXXType and createReferenceOfXXXType 
   
@@ -265,6 +268,22 @@ trait PrimitiveTypeMode extends QueryDsl {
         new SelectElementReference[Option[UUID]](n) with UuidExpression[Option[UUID]]
     }
 
+  def createLeafNodeOfScalarJodaDateTimeType(d: DateTime) =
+    FieldReferenceLinker.takeLastAccessedFieldReference match {
+      case None =>
+        new ConstantExpressionNode[DateTime](d) with JodaDateTimeExpression[DateTime]
+      case Some(n:SelectElement) =>
+        new SelectElementReference[DateTime](n) with JodaDateTimeExpression[DateTime]
+    }
+
+  def createLeafNodeOfScalarJodaDateTimeOptionType(d: Option[DateTime]) =
+    FieldReferenceLinker.takeLastAccessedFieldReference match {
+      case None =>
+        new ConstantExpressionNode[Option[DateTime]](d) with JodaDateTimeExpression[Option[DateTime]]
+      case Some(n:SelectElement) =>
+        new SelectElementReference[Option[DateTime]](n) with JodaDateTimeExpression[Option[DateTime]]
+    }
+
   protected def mapByte2ByteType(i: Byte) = i
   protected def mapInt2IntType(i: Int) = i
   protected def mapString2StringType(s: String) = s
@@ -281,6 +300,7 @@ trait PrimitiveTypeMode extends QueryDsl {
     case s: String => UUID.fromString(s)
   }
   protected def mapBinary2BinaryType(d: Array[Byte]) = d
+  protected def mapTimestamp2JodaDateTimeType(t: Timestamp) = new DateTime(t)
 
   protected implicit val sampleByte: ByteType = 0xF.byteValue
   protected implicit val sampleInt: IntType = 0
@@ -295,6 +315,7 @@ trait PrimitiveTypeMode extends QueryDsl {
   //protected implicit def sampleEnumerationValueType: EnumerationValueType = DummyEnum.DummyEnumerationValue
   protected implicit val sampleUuid: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
   protected implicit val sampleBinary: BinaryType = Array[Byte](0)
+  protected implicit val sampleJodaDateTime: JodaDateTimeType = new DateTime()
 }
 
 object DummyEnum extends Enumeration {

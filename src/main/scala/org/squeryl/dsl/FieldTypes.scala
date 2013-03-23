@@ -49,6 +49,8 @@ trait FieldTypes {
 
   type BinaryType
 
+  type JodaDateTimeType
+
   protected implicit def sampleByte: ByteType
   protected implicit def sampleInt: IntType
   protected implicit def sampleString: StringType
@@ -62,6 +64,7 @@ trait FieldTypes {
   //protected implicit def sampleEnumerationValueType: EnumerationValueType
   protected implicit def sampleBinary: BinaryType
   protected implicit def sampleUuid: UuidType
+  protected implicit def sampleJodaDateTime: JodaDateTimeType
 
   protected implicit val sampleByteO = Some(sampleByte)
   protected implicit val sampleIntO = Some(sampleInt)
@@ -76,6 +79,7 @@ trait FieldTypes {
   //protected implicit val sampleEnumerationValueTypeO = Some(sampleEnumerationValueType)
   protected implicit val sampleBinaryO = Some(sampleBinary)
   protected implicit val sampleUuidO = Some(sampleUuid)
+  protected implicit val sampleJodaDateTimeO = Some(sampleJodaDateTime)
 }
 
 
@@ -183,5 +187,9 @@ trait DateExpression[A] extends NonNumericalExpression[A] {
 }
 
 trait UuidExpression[A] extends NonNumericalExpression[A] {
+  def ~ = this
+}
+
+trait JodaDateTimeExpression[A] extends NonNumericalExpression[A] {
   def ~ = this
 }

@@ -61,6 +61,8 @@ object SquerylBuild extends Build {
 			  (LsKeys.ghUser in LsKeys.lsync) := Some("max-l"),
         */
       libraryDependencies ++= Seq(
+        "joda-time" % "joda-time" % "2.2",
+        "org.joda" % "joda-convert" % "1.2",
         "cglib" % "cglib-nodep" % "2.2",
         "com.h2database" % "h2" % "1.2.127" % "provided",
         "mysql" % "mysql-connector-java" % "5.1.10" % "provided",

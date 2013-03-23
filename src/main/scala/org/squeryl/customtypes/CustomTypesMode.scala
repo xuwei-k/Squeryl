@@ -22,6 +22,7 @@ import org.squeryl.dsl._
 import java.sql.Timestamp
 import org.squeryl.internals.{OutMapper, FieldReferenceLinker}
 import com.sun.org.apache.xalan.internal.xsltc.compiler.util.IntType
+import org.joda.time.DateTime
 
 trait CustomType[T] extends Product1[T] {
   def value: T
@@ -81,6 +82,8 @@ trait CustomTypesMode extends QueryDsl {
 
   type UuidType = UuidField
 
+  type JodaDateTimeType = JodaDateTimeField 
+
   protected def mapByte2ByteType(i: Byte) = new ByteField(i)
   protected def mapInt2IntType(i: Int) = new IntField(i)
   protected def mapString2StringType(s: String) = new StringField(s)
@@ -97,6 +100,7 @@ trait CustomTypesMode extends QueryDsl {
     case u: UUID => u
     case s: String => UUID.fromString(s)
   })
+  protected def mapTimestamp2JodaDateTimeType(u: Timestamp) = new JodaDateTimeField(new DateTime(u))
 
   protected implicit val sampleByte: ByteType = new ByteField(0)
   protected implicit val sampleInt = new IntField(0)
@@ -110,6 +114,7 @@ trait CustomTypesMode extends QueryDsl {
   protected implicit def sampleTimestamp = new TimestampField(new Timestamp(0))
   protected implicit val sampleBinary: BinaryType = new BinaryField(Array[Byte](0))
   protected implicit val sampleUuid: UuidType= new UuidField(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+  protected implicit val sampleJodaDateTime: JodaDateTimeType = new JodaDateTimeField(new DateTime())
 
   //TODO Scala bug report, implicit params should work here , but they don't ...
   def createLeafNodeOfScalarIntType(i: IntField) =
@@ -304,6 +309,24 @@ trait CustomTypesMode extends QueryDsl {
         new SelectElementReference[Option[BinaryType]](n)(createOutMapperBinaryTypeOption) with BinaryExpression[Option[BinaryType]]
     }
 
+  def createLeafNodeOfScalarJodaDateTimeType(i: JodaDateTimeField) =
+    FieldReferenceLinker.takeLastAccessedFieldReference match {
+      case None =>
+        new ConstantExpressionNode[JodaDateTimeType](i) with JodaDateTimeExpression[JodaDateTimeType]
+      case Some(n:SelectElement) =>
+        new SelectElementReference[JodaDateTimeType](n)(createOutMapperJodaDateTimeType) with JodaDateTimeExpression[JodaDateTimeType]
+    }
+
+  def createLeafNodeOfScalarJodaDateTimeOptionType(i: Option[JodaDateTimeField]) =
+    FieldReferenceLinker.takeLastAccessedFieldReference match {
+      case None =>
+        new ConstantExpressionNode[Option[JodaDateTimeType]](i) with JodaDateTimeExpression[Option[JodaDateTimeType]]
+      case Some(n:SelectElement) =>
+        new SelectElementReference[Option[JodaDateTimeType]](n)(createOutMapperJodaDateTimeTypeOption) with JodaDateTimeExpression[Option[JodaDateTimeType]]
+    }
+
+
+
 }
 
 object CustomTypesMode extends CustomTypesMode 
@@ -332,3 +355,5 @@ class TimestampField(val value: Timestamp) extends CustomType[Timestamp]
 class BinaryField(val value: Array[Byte]) extends CustomType[Array[Byte]]
 
 class UuidField(val value: UUID) extends CustomType[UUID]
+
+class JodaDateTimeField(val value: DateTime) extends CustomType[DateTime]

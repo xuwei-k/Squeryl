@@ -58,6 +58,9 @@ trait DslFactory
   protected def createLeafNodeOfScalarUuidType(d: UuidType): UuidExpression[UuidType]
   protected def createLeafNodeOfScalarUuidOptionType(d: Option[UuidType]): UuidExpression[Option[UuidType]]
 
+  protected def createLeafNodeOfScalarJodaDateTimeType(d: JodaDateTimeType): JodaDateTimeExpression[JodaDateTimeType]
+  protected def createLeafNodeOfScalarJodaDateTimeOptionType(d: Option[JodaDateTimeType]): JodaDateTimeExpression[Option[JodaDateTimeType]]
+
   protected def createLeafNodeOfEnumExpressionType[A](e: EnumerationValueType): EnumExpression[EnumerationValueType]
   protected def createLeafNodeOfEnumExpressionOptionType[A](e: Option[EnumerationValueType]): EnumExpression[Option[EnumerationValueType]]
 
@@ -108,6 +111,10 @@ trait DslFactory
   implicit def uuid2ScalarUuid(u: UuidType) = createLeafNodeOfScalarUuidType(u)
 
   implicit def optionUuid2ScalarUuid(u: Option[UuidType]) = createLeafNodeOfScalarUuidOptionType(u)
+
+  implicit def jodaDateTime2ScalarJodaDateTime(u: JodaDateTimeType) = createLeafNodeOfScalarJodaDateTimeType(u)
+
+  implicit def optionDateTime2ScalarJodaDateTime(u: Option[JodaDateTimeType]) = createLeafNodeOfScalarJodaDateTimeOptionType(u)
 
   implicit def binary2ScalarBinary(b: BinaryType) = createLeafNodeOfScalarBinaryType(b)
 

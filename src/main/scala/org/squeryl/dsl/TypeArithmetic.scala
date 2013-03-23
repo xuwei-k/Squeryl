@@ -19,6 +19,7 @@ import ast._
 import org.squeryl.internals._
 import java.util.{Date, UUID}
 import java.sql.{Timestamp, ResultSet}
+import org.joda.time.DateTime
 
 class NumericalTypeConversion[A](e: ExpressionNode)(implicit val mapper: OutMapper[A]) extends TypeConversion(e) with NumericalExpression[A]
 
@@ -456,6 +457,7 @@ trait TypeArithmetic extends FieldTypes {
   protected def mapBinary2BinaryType(b: Array[Byte]): BinaryType
   protected def mapDate2DateType(b: Date): DateType
   protected def mapTimestamp2TimestampType(b: Timestamp): TimestampType
+  protected def mapTimestamp2JodaDateTimeType(u: Timestamp): JodaDateTimeType
   protected def mapObject2UuidType(u: AnyRef): UuidType
   //protected def mapInt2EnumerationValueType(b: Int): EnumerationValueType
 
@@ -516,6 +518,10 @@ trait TypeArithmetic extends FieldTypes {
   implicit def createOutMapperUuidType: OutMapper[UuidType] = new OutMapper[UuidType] {
     def doMap(rs: ResultSet) = mapObject2UuidType(rs.getObject(index))
     def sample = sampleUuid
+  }
+  implicit def createOutMapperJodaDateTimeType: OutMapper[JodaDateTimeType] = new OutMapper[JodaDateTimeType] {
+    def doMap(rs: ResultSet) = mapTimestamp2JodaDateTimeType(rs.getTimestamp(index))
+    def sample = sampleJodaDateTime
   }
 //  implicit def createOutMapperEnumerationValueType: OutMapper[EnumerationValueType] = new OutMapper[EnumerationValueType] {
 //    def doMap(rs: ResultSet) = mapInt2EnumerationValueType(rs.getInt(index))
@@ -652,6 +658,17 @@ trait TypeArithmetic extends FieldTypes {
         Some(v)
     }
     def sample = Some(sampleUuid)
+  }
+
+  implicit def createOutMapperJodaDateTimeTypeOption: OutMapper[Option[JodaDateTimeType]] = new OutMapper[Option[JodaDateTimeType]] {
+    def doMap(rs: ResultSet) = {
+      val v = mapTimestamp2JodaDateTimeType(rs.getTimestamp(index))
+      if(rs.wasNull)
+        None
+      else
+        Some(v)
+    }
+    def sample = Some(sampleJodaDateTime)
   }
 
   protected def outMapperFromEnumValue(e: Enumeration#Value) = {
