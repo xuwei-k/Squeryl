@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ trait ExpressionNode {
   def id = Integer.toHexString(System.identityHashCode(this))
 
   def inhibited = _inhibitedByWhen
-  
+
   def inhibitedFlagForAstDump =
     if(inhibited) "!" else ""
 
@@ -47,7 +47,7 @@ trait ExpressionNode {
   }
 
   def children: List[ExpressionNode] = List.empty
-  
+
   override def toString = this.getClass.getName
 
   private def _visitDescendants(
@@ -106,15 +106,15 @@ trait ExpressionNode {
 trait ListExpressionNode extends ExpressionNode {
 
   def quotesElement = false
-  
+
   def isEmpty: Boolean
 }
 
 class EqualityExpression(override val left: TypedExpression[_,_], override val right: TypedExpression[_,_]) extends BinaryOperatorNodeLogicalBoolean(left, right, "=") {
-  
-  override def doWrite(sw: StatementWriter) =     
+
+  override def doWrite(sw: StatementWriter) =
     right match {
-      case c: ConstantTypedExpression[_,_] => 
+      case c: ConstantTypedExpression[_,_] =>
         if(c.value == None) {
           left.write(sw)
           sw.write(" is null")
@@ -122,7 +122,7 @@ class EqualityExpression(override val left: TypedExpression[_,_], override val r
         else super.doWrite(sw)
       case _ => super.doWrite(sw)
     }
-  
+
 }
 
 class InclusionOperator(left: ExpressionNode, right: RightHandSideOfIn[_]) extends BinaryOperatorNodeLogicalBoolean(left, right, "in", true) {
@@ -147,7 +147,7 @@ class BinaryOperatorNodeLogicalBoolean(left: ExpressionNode, right: ExpressionNo
     		left.inhibited || right.inhibited
     }
   }
-  
+
   override def doWrite(sw: StatementWriter) = {
     // since we are executing this method, we have at least one non inhibited children
     val nonInh = children.filter(c => ! c.inhibited).iterator
@@ -165,9 +165,9 @@ class BinaryOperatorNodeLogicalBoolean(left: ExpressionNode, right: ExpressionNo
         sw.write("(")
 
       nonInh.next.write(sw)
-      
+
       if(rightArgInParent)
-        sw.write(")")      
+        sw.write(")")
     }
     sw.write(")")
   }
@@ -211,7 +211,7 @@ trait BaseColumnAttributeAssignment {
   def isIdFieldOfKeyedEntity: Boolean
 
   def isIdFieldOfKeyedEntityWithoutUniquenessConstraint =
-    isIdFieldOfKeyedEntity && ! (columnAttributes.exists(_.isInstanceOf[PrimaryKey]) || columnAttributes.exists(_.isInstanceOf[Unique]))
+    isIdFieldOfKeyedEntity && ! (columnAttributes.exists(_ == PrimaryKey) || columnAttributes.exists(_ == Unique))
 
   def columnAttributes: Seq[ColumnAttribute]
 
@@ -219,7 +219,7 @@ trait BaseColumnAttributeAssignment {
     findAttribute[A](m) != None
 
   def findAttribute[A <: ColumnAttribute](implicit m: Manifest[A]) =
-    columnAttributes.find(ca => m.erasure.isAssignableFrom(ca.getClass))  
+    columnAttributes.find(ca => m.erasure.isAssignableFrom(ca.getClass))
 }
 
 class ColumnGroupAttributeAssignment(cols: Seq[FieldMetaData], columnAttributes_ : Seq[ColumnAttribute])
@@ -229,7 +229,7 @@ class ColumnGroupAttributeAssignment(cols: Seq[FieldMetaData], columnAttributes_
 
   _columnAttributes.appendAll(columnAttributes_)
 
-  def columnAttributes = _columnAttributes 
+  def columnAttributes = _columnAttributes
 
   def addAttribute(a: ColumnAttribute) =
     _columnAttributes.append(a)
@@ -261,7 +261,7 @@ class ColumnAttributeAssignment(val left: FieldMetaData, val columnAttributes: S
 
   def clearColumnAttributes = left._clearColumnAttributes
 
-  def isIdFieldOfKeyedEntity = left.isIdFieldOfKeyedEntity 
+  def isIdFieldOfKeyedEntity = left.isIdFieldOfKeyedEntity
 }
 
 class DefaultValueAssignment(val left: FieldMetaData, val value: TypedExpression[_,_])
@@ -321,7 +321,7 @@ class ConstantExpressionNodeList[T](val value: Traversable[T]) extends Expressio
 }
 
 class FunctionNode(val name: String, val args: Seq[ExpressionNode]) extends ExpressionNode {
-        
+
   def doWrite(sw: StatementWriter) = {
 
     sw.write(name)
@@ -329,7 +329,7 @@ class FunctionNode(val name: String, val args: Seq[ExpressionNode]) extends Expr
     sw.writeNodesWithSeparator(args, ",", false)
     sw.write(")")
   }
-  
+
   override def children = args.toList
 }
 
@@ -364,7 +364,7 @@ class BinaryOperatorNode
 
   override def toString =
     'BinaryOperatorNode + ":" + operatorToken + inhibitedFlagForAstDump
-  
+
   def doWrite(sw: StatementWriter) = {
     sw.write("(")
     left.write(sw)
@@ -403,8 +403,8 @@ class LeftOuterJoinNode
   extends BinaryOperatorNode(left,right, "left", false) {
 
   override def doWrite(sw: StatementWriter) = {}
-  
-  override def toString = 'LeftOuterJoin + ""  
+
+  override def toString = 'LeftOuterJoin + ""
 }
 
 class FullOuterJoinNode(left: ExpressionNode, right: ExpressionNode) extends BinaryOperatorNode(left, right, "full", false) {
@@ -412,7 +412,7 @@ class FullOuterJoinNode(left: ExpressionNode, right: ExpressionNode) extends Bin
 }
 
 trait UniqueIdInAliaseRequired  {
-  var uniqueId: Option[Int] = None 
+  var uniqueId: Option[Int] = None
 }
 
 trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequired {
@@ -425,7 +425,7 @@ trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequir
 
   /**
    * When the join syntax is used, isMemberOfJoinList is true if this instance is not in the from clause
-   * but a 'join element'. 
+   * but a 'join element'.
    */
   def isMemberOfJoinList = joinKind != None
 
@@ -437,15 +437,15 @@ trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequir
 
   var joinExpression: Option[LogicalBoolean] = None
 
-  // this 'old' join syntax will become deprecated : 
+  // this 'old' join syntax will become deprecated :
   var outerJoinExpression: Option[OuterJoinExpression] = None
 
   var isRightJoined = false
 
-  def isChild(q: QueryableExpressionNode): Boolean  
+  def isChild(q: QueryableExpressionNode): Boolean
 
   def owns(aSample: AnyRef): Boolean
-  
+
   def alias: String
 
   def getOrCreateSelectElement(fmd: FieldMetaData, forScope: QueryExpressionElements): SelectElement
@@ -461,7 +461,7 @@ trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequir
       sb.append("\n")
     }
     sb.toString
-  }  
+  }
 }
 
 class OrderByArg(val e: ExpressionNode) {
@@ -478,13 +478,13 @@ class OrderByArg(val e: ExpressionNode) {
   def desc = {
     _ascending = false
     this
-  }  
+  }
 }
 
 class OrderByExpression(a: OrderByArg) extends ExpressionNode {
 
   private def e = a.e
-  
+
   override def inhibited = e.inhibited
 
   def doWrite(sw: StatementWriter) = {
@@ -507,7 +507,7 @@ class OrderByExpression(a: OrderByArg) extends ExpressionNode {
       aCopy.asc
 
     new OrderByExpression(aCopy)
-  }  
+  }
 }
 
 /**
@@ -517,7 +517,7 @@ class OrderByExpression(a: OrderByArg) extends ExpressionNode {
  * The StatisticsListener needs to view every expression call as an AST,
  * which is the reason for this class.
  * AST are meant to be "non rendered", i.e. agnostic to specific DatabaseAdapter,
- * this DummyExpressionHolder is an exception.  
+ * this DummyExpressionHolder is an exception.
  * TODO: unify expression building to be completely AST based.
  */
 class DummyExpressionHolder(val renderedExpression: String) extends ExpressionNode {

@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,11 +26,11 @@ import java.util.UUID
 trait DatabaseAdapter {
 
   class Zip[T](val element: T, val isLast: Boolean, val isFirst: Boolean)
-  
+
   class ZipIterable[T](iterable: Iterable[T]) {
     val count = iterable.size
     def foreach[U](f: Zip[T] => U):Unit = {
-      var c = 1  
+      var c = 1
       for(i <- iterable) {
         f(new Zip(i, c == count, c == 1))
         c += 1
@@ -53,7 +53,7 @@ trait DatabaseAdapter {
 
     if(qen.selectDistinct)
       sw.write(" distinct")
-    
+
     sw.nextLine
     sw.writeIndented {
       sw.writeNodesWithSeparator(qen.selectList.filter(e => ! e.inhibited), ",", true)
@@ -95,8 +95,8 @@ trait DatabaseAdapter {
     }
 
     writeEndOfFromHint(qen, sw)
-    
-    if(qen.hasUnInhibitedWhereClause) {      
+
+    if(qen.hasUnInhibitedWhereClause) {
       sw.write("Where")
       sw.nextLine
       sw.writeIndented {
@@ -105,7 +105,7 @@ trait DatabaseAdapter {
       sw.pushPendingNextLine
     }
 
-    if(! qen.groupByClause.isEmpty) {      
+    if(! qen.groupByClause.isEmpty) {
       sw.write("Group By")
       sw.nextLine
       sw.writeIndented {
@@ -139,7 +139,7 @@ trait DatabaseAdapter {
     writePaginatedQueryDeclaration(qen, sw)
   }
 
-  def writeEndOfQueryHint(qen: QueryExpressionElements, sw: StatementWriter) = 
+  def writeEndOfQueryHint(qen: QueryExpressionElements, sw: StatementWriter) =
     if(qen.isForUpdate) {
       sw.write("for update")
       sw.pushPendingNextLine
@@ -147,7 +147,7 @@ trait DatabaseAdapter {
 
   def writeEndOfFromHint(qen: QueryExpressionElements, sw: StatementWriter) = {}
 
-  def writePaginatedQueryDeclaration(qen: QueryExpressionElements, sw: StatementWriter):Unit = 
+  def writePaginatedQueryDeclaration(qen: QueryExpressionElements, sw: StatementWriter):Unit =
     qen.page.foreach(p => {
       sw.write("limit ")
       sw.write(p._2.toString)
@@ -184,11 +184,11 @@ trait DatabaseAdapter {
   def intArrayTypeDeclaration = intTypeDeclaration + "[]"
   def longArrayTypeDeclaration = longTypeDeclaration + "[]"
   def doubleArrayTypeDeclaration = doubleTypeDeclaration + "[]"
-    
+
   def jdbcIntArrayCreationType = intTypeDeclaration
   def jdbcLongArrayCreationType = longTypeDeclaration
   def jdbcDoubleArrayCreationType = doubleTypeDeclaration
-    
+
   final def arrayCreationType(ptype : Class[_]) : String = {
     val rv = ptype.getName() match {
       case "java.lang.Integer" => jdbcIntArrayCreationType
@@ -198,7 +198,7 @@ trait DatabaseAdapter {
     }
     rv
   }
-    
+
 /*
   private val _declarationHandler = new FieldTypeHandler[String] {
 
@@ -217,18 +217,18 @@ trait DatabaseAdapter {
     def handleUnknownType(c: Class[_]) =
       org.squeryl.internals.Utils.throwError("don't know how to map field type " + c.getName)
   }
-*/  
+*/
   def databaseTypeFor(fmd: FieldMetaData):String =
     fmd.explicitDbTypeDeclaration.getOrElse(
       fmd.schema.columnTypeFor(fmd, fmd.parentMetaData.viewOrTable.asInstanceOf[Table[_]]).getOrElse {
         val nativeJdbcType = fmd.nativeJdbcType
-          
+
         if(classOf[String].isAssignableFrom(nativeJdbcType))
           stringTypeDeclaration(fmd.length)
         else if(classOf[BigDecimal].isAssignableFrom(nativeJdbcType))
           bigDecimalTypeDeclaration(fmd.length, fmd.scale)
-        else             
-          databaseTypeFor(fmd.schema.fieldMapper, nativeJdbcType)        
+        else
+          databaseTypeFor(fmd.schema.fieldMapper, nativeJdbcType)
       }
     )
 
@@ -237,7 +237,7 @@ trait DatabaseAdapter {
     val dbTypeDeclaration = databaseTypeFor(fmd)
 
     val sb = new StringBuilder(128)
-  
+
     sb.append("  ")
     sb.append(quoteName(fmd.columnName))
     sb.append(" ")
@@ -258,7 +258,7 @@ trait DatabaseAdapter {
 
     if(!fmd.isOption)
       sb.append(" not null")
-    
+
     if(supportsAutoIncrementInColumnDeclaration && fmd.isAutoIncremented)
       sb.append(" auto_increment")
 
@@ -281,30 +281,27 @@ trait DatabaseAdapter {
       )
     }
     sw.write(")")
-  }                     
-  
+  }
+
   def convertParamsForJdbc(params: Iterable[AnyRef]) =
-    for(p <- params) yield {
-       p match {
-         case null => null	        
-	     case None => null
-	     case Some(x: AnyRef) => convertToJdbcValue(x)
-	     case x: AnyRef =>  convertToJdbcValue(x)
-	   }     
+    params.map{
+      case null | None => null
+      case Some(x: AnyRef) => convertToJdbcValue(x)
+      case x: AnyRef =>  convertToJdbcValue(x)
     }
-        
-  def fillParamsInto(params: Iterable[AnyRef], s: PreparedStatement) {    
+
+  def fillParamsInto(params: Iterable[AnyRef], s: PreparedStatement) {
     var i = 1;
     for(p <- params) {
       s.setObject(i, p)
       i += 1
-    }    
+    }
   }
 
   private def _exec[A](s: Session, sw: StatementWriter, block: Iterable[AnyRef]=>A, args: Iterable[AnyRef]): A =
     try {
       if(s.isLoggingEnabled)
-        s.log(sw.toString)      
+        s.log(sw.toString)
       block(args)
     }
     catch {
@@ -313,9 +310,9 @@ trait DatabaseAdapter {
             "Exception while executing statement : "+ e.getMessage+
            "\nerrorCode: " +
             e.getErrorCode + ", sqlState: " + e.getSQLState + "\n" +
-            sw.statement + "\njdbcParams:" + 
+            sw.statement + "\njdbcParams:" +
             args.mkString("[",",","]"), e)
-    }    
+    }
 
   def failureOfStatementRequiresRollback = false
 
@@ -352,7 +349,7 @@ trait DatabaseAdapter {
       Utils.close(stat)
     }
   }
-  
+
   implicit def string2StatementWriter(s: String) = {
     val sw = new StatementWriter(this)
     sw.write(s)
@@ -402,7 +399,7 @@ trait DatabaseAdapter {
 
   def writeInsert[T](o: T, t: Table[T], sw: StatementWriter):Unit = {
 
-    val o_ = o.asInstanceOf[AnyRef]    
+    val o_ = o.asInstanceOf[AnyRef]
     val f = getInsertableFields(t.posoMetaData.fieldsMetaData)
 
     sw.write("insert into ");
@@ -439,7 +436,7 @@ trait DatabaseAdapter {
 //  see comment in def convertFromBooleanForJdbc
 //    if(v.isInstanceOf[java.lang.Boolean])
 //      v = convertFromBooleanForJdbc(v)
-  
+
   // TODO: move to StatementWriter (since it encapsulates the 'magic' of swapping values for '?' when needed)
   //and consider delaying the ? to 'value' decision until execution, in order to make StatementWriter loggable
   //with values at any time (via : a kind of prettyStatement method)
@@ -456,33 +453,21 @@ trait DatabaseAdapter {
       "?"
     }
 
-//  protected def writeValue(sw: StatementWriter, v: AnyRef):String =
-//    if(sw.isForDisplay) {
-//      if(v != null)
-//        v.toString
-//      else
-//        "null"
-//    }
-//    else {
-//      sw.addParam(convertToJdbcValue(v))
-//      "?"
-//    }
-
   /**
    * When @arg printSinkWhenWriteOnlyMode is not None, the adapter will not execute any statement, but only silently give it to the String=>Unit closure
    */
   def postCreateTable(t: Table[_], printSinkWhenWriteOnlyMode: Option[String => Unit]) = {}
-  
+
   def postDropTable(t: Table[_]) = {}
 
-  def createSequenceName(fmd: FieldMetaData) = 
+  def createSequenceName(fmd: FieldMetaData) =
     "s_" + fmd.parentMetaData.viewOrTable.name + "_" + fmd.columnName
 
   def writeConcatFunctionCall(fn: FunctionNode, sw: StatementWriter) = {
     sw.write(fn.name)
     sw.write("(")
     sw.writeNodesWithSeparator(fn.args, ",", false)
-    sw.write(")")    
+    sw.write(")")
   }
 
   def isFullOuterJoinSupported = true
@@ -490,7 +475,6 @@ trait DatabaseAdapter {
   def writeUpdate[T](o: T, t: Table[T], sw: StatementWriter, checkOCC: Boolean) = {
 
     val o_ = o.asInstanceOf[AnyRef]
-
 
     sw.write("update ", quoteName(t.prefixedName), " set ")
     sw.nextLine
@@ -510,7 +494,7 @@ trait DatabaseAdapter {
     sw.write("where")
     sw.nextLine
     sw.indent
-    
+
     t.posoMetaData.primaryKey.getOrElse(throw new UnsupportedOperationException("writeUpdate was called on an object that does not extend from KeyedEntity[]")).fold(
       pkMd => sw.write(quoteName(pkMd.columnName), " = ", writeValue(o_, pkMd, sw)),
       pkGetter => {
@@ -586,18 +570,18 @@ trait DatabaseAdapter {
       if(!z.isLast) {
         sw.write(",")
         sw.nextLine
-      }      
+      }
     }
 
     if(t.posoMetaData.isOptimistic) {
       sw.write(",")
-      sw.nextLine      
+      sw.nextLine
       val occ = t.posoMetaData.optimisticCounter.get
       sw.write(quoteName(occ.columnName))
       sw.write(" = ")
       sw.write(quoteName(occ.columnName) + " + 1")
     }
-    
+
     sw.unindent
 
     if(us.whereClause != None) {
@@ -622,10 +606,10 @@ trait DatabaseAdapter {
   }
 
   /**
-   * Figures out from the SQLException (ex.: vendor specific error code) 
+   * Figures out from the SQLException (ex.: vendor specific error code)
    * if it's cause is a NOT NULL constraint violation
    */
-  def isNotNullConstraintViolation(e: SQLException): Boolean = false  
+  def isNotNullConstraintViolation(e: SQLException): Boolean = false
 
   def foreignKeyConstraintName(foreignKeyTable: Table[_], idWithinSchema: Int) =
     foreignKeyTable.name + "FK" + idWithinSchema
@@ -642,7 +626,7 @@ trait DatabaseAdapter {
     referentialAction1: Option[ReferentialAction],
     referentialAction2: Option[ReferentialAction],
     fkId: Int) = {
-    
+
     val sb = new StringBuilder(256)
 
     sb.append("alter table ")
@@ -670,9 +654,6 @@ trait DatabaseAdapter {
     sb.toString
   }
 
-  protected def currenSession =
-    Session.currentSession
-
   def writeDropForeignKeyStatement(foreignKeyTable: Table[_], fkName: String) =
     "alter table " + quoteName(foreignKeyTable.prefixedName) + " drop constraint " + quoteName(fkName)
 
@@ -689,13 +670,13 @@ trait DatabaseAdapter {
   def dropTable(t: Table[_]) =
     execFailSafeExecute(writeDropTable(t.prefixedName), e=> isTableDoesNotExistException(e))
 
-  def writeCompositePrimaryKeyConstraint(t: Table[_], cols: Iterable[FieldMetaData]) = 
+  def writeCompositePrimaryKeyConstraint(t: Table[_], cols: Iterable[FieldMetaData]) =
       writeUniquenessConstraint(t, cols);
 
   def writeUniquenessConstraint(t: Table[_], cols: Iterable[FieldMetaData]) = {
     //ALTER TABLE TEST ADD CONSTRAINT NAME_UNIQUE UNIQUE(NAME)
     val sb = new StringBuilder(256)
-    
+
     sb.append("alter table ")
     sb.append(quoteName(t.prefixedName))
     sb.append(" add constraint ")
@@ -719,18 +700,12 @@ trait DatabaseAdapter {
     binaryOpNode.doWrite(sw)
   }
 
-//  /**
-//   * @nameOfCompositeKey when not None, the column group forms a composite key, 'nameOfCompositeKey' can be used
-//   * as part of the name to create a more meaningfull name for the constraint
-//   */
-//  def writeUniquenessConstraint(columnDefs: Seq[FieldMetaData], nameOfCompositeKey: Option[String]) = ""
-
   /**
    * @name the name specified in the Schema, when not None, it  must be used as the name
    * @nameOfCompositeKey when not None, the column group forms a composite key, 'nameOfCompositeKey' can be used
    * as part of the name to create a more meaningfull name for the constraint, when 'name' is None
    */
-  def writeIndexDeclaration(columnDefs: Seq[FieldMetaData], name:Option[String], nameOfCompositeKey: Option[String], isUnique: Boolean) = {                                    
+  def writeIndexDeclaration(columnDefs: Seq[FieldMetaData], name:Option[String], nameOfCompositeKey: Option[String], isUnique: Boolean) = {
     val sb = new StringBuilder(256)
     sb.append("create ")
 
@@ -780,20 +755,18 @@ trait DatabaseAdapter {
 
   def writeSelectElementAlias(se: SelectElement, sw: StatementWriter) = {
     val a = se.aliasSegment
-//    if(a.length > 30)
-//      org.squeryl.internals.Utils.throwError("Oracle Bust : " + a)
     sw.write(quoteName(a))
   }
 
   def databaseTypeFor(fieldMapper: FieldMapper, c: Class[_]): String = {
     val ar = fieldMapper.sampleValueFor(c)
-    val decl = 
-      if(ar.isInstanceOf[Enumeration#Value])                 
+    val decl =
+      if(ar.isInstanceOf[Enumeration#Value])
         intTypeDeclaration
       else if(classOf[String].isAssignableFrom(c))
-        stringTypeDeclaration                  
+        stringTypeDeclaration
       else if(ar.isInstanceOf[java.sql.Timestamp])
-        timestampTypeDeclaration                  
+        timestampTypeDeclaration
       else if(ar.isInstanceOf[java.util.Date])
         dateTypeDeclaration
       else if(ar.isInstanceOf[java.lang.Integer])
@@ -811,7 +784,7 @@ trait DatabaseAdapter {
       else if(classOf[scala.Array[Byte]].isAssignableFrom(c))
         binaryTypeDeclaration
       else if(classOf[BigDecimal].isAssignableFrom(c))
-        bigDecimalTypeDeclaration                  
+        bigDecimalTypeDeclaration
       else if(classOf[scala.Array[Int]].isAssignableFrom(c))
         intArrayTypeDeclaration
       else if(classOf[scala.Array[Long]].isAssignableFrom(c))
@@ -820,42 +793,8 @@ trait DatabaseAdapter {
         doubleArrayTypeDeclaration
       else
         Utils.throwError("unsupported type " + ar.getClass.getCanonicalName)
-     
-      decl    
+
+      decl
   }
 
-/*
-  def writeCastInvocation(e: TypedExpression[_,_], sw: StatementWriter) = {
-    sw.write("cast(")
-    e.write(sw)
-
-    val dbSpecificType = databaseTypeFor(e.mapper.jdbcClass)
-
-    sw.write(" as ")
-    sw.write(dbSpecificType)
-    sw.write(")")
-  }
-
-  def writeCaseStatement(toMatch: Option[ExpressionNode], cases: Iterable[(ExpressionNode, TypedExpression[_,_])], otherwise: TypedExpression[_,_], sw: StatementWriter) = {
-
-    sw.write("(case ")
-    toMatch.foreach(_.write(sw))
-    sw.indent
-    sw.nextLine
-
-    for(c <- cases) {
-      sw.write("when ")
-      c._1.write(sw)
-      sw.write(" then ")
-      writeCastInvocation(c._2, sw)
-      sw.nextLine
-    }
-
-    sw.write("else ")
-    writeCastInvocation(otherwise,sw)
-    sw.nextLine
-    sw.unindent
-    sw.write("end)")
-  }
-*/  
 }
