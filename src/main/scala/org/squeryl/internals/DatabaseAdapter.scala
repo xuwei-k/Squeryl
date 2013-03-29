@@ -200,7 +200,7 @@ trait DatabaseAdapter {
   }
 
 /*
-  private val _declarationHandler = new FieldTypeHandler[String] {
+  private[this] val _declarationHandler = new FieldTypeHandler[String] {
 
     def handleIntType = intTypeDeclaration
     def handleStringType  = stringTypeDeclaration

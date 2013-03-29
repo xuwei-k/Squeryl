@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,10 +61,10 @@ object FieldReferenceLinker {
   }
 
   def inspectedQueryExpressionNode = _yieldInspectionTL.get.queryExpressionNode
-  
-  private val _yieldValues = new ThreadLocal[ArrayBuffer[AnyRef]]
-  
-  private val __lastAccessedFieldReference = new ThreadLocal[Option[SelectElement]]
+
+  private[this] val _yieldValues = new ThreadLocal[ArrayBuffer[AnyRef]]
+
+  private[this] val __lastAccessedFieldReference = new ThreadLocal[Option[SelectElement]]
 
   private [squeryl] def _lastAccessedFieldReference: Option[SelectElement] = {
     val fr = __lastAccessedFieldReference.get
@@ -77,15 +77,15 @@ object FieldReferenceLinker {
     } else {
       __lastAccessedFieldReference.set(se)
     }
-  
-  private val _compositeKeyMembers = new ThreadLocal[Option[ArrayBuffer[SelectElement]]]
+
+  private[this] val _compositeKeyMembers = new ThreadLocal[Option[ArrayBuffer[SelectElement]]]
 
   /**
    * _lastAccessedFieldReference is unique per thread, AST construction can be nested and can interfere with
    * one another, this method is used for  preserving the previous _lastAccessedFieldReference when a nested
    * AST construction takes place *and* during the construction of 'sample' POSOs, because they are proxied,
    * and can call their intercepted fields during construction, calling the constructor for 'sample' POSO construction
-   * without wrapping with this methor would have the effect of 'polluting' the _lastAccessedFieldReference (issue 68). 
+   * without wrapping with this methor would have the effect of 'polluting' the _lastAccessedFieldReference (issue 68).
    */
   def executeAndRestoreLastAccessedFieldReference[A](expressionWithSideEffectsASTConstructionThreadLocalState: =>A): A = {
     // if we are currently building an AST, we must save the (last) _lastAccessedFieldReference
@@ -95,10 +95,10 @@ object FieldReferenceLinker {
     FieldReferenceLinker._lastAccessedFieldReference = prev
     a
   }
-  
+
   class YieldInspection {
-    
-    private val _utilizedFields = new ArrayBuffer[SelectElement]
+
+    private[this] val _utilizedFields = new ArrayBuffer[SelectElement]
     var _on = false
     var queryExpressionNode: QueryExpressionNode[_] = null
     var _resultSetMapper: ResultSetMapper = null
@@ -118,18 +118,18 @@ object FieldReferenceLinker {
         _utilizedFields.append(e)
         e.prepareColumnMapper(_utilizedFields.size)
       }
-    
+
     def resultSetMapper = _resultSetMapper
 
-    private var _reentranceDepth = 0
+    private[this] var _reentranceDepth = 0
 
-     def reentranceDepth = _reentranceDepth
+    def reentranceDepth = _reentranceDepth
 
-     def incrementReentranceDepth =
-       _reentranceDepth += 1
+    def incrementReentranceDepth =
+      _reentranceDepth += 1
 
-     def decrementReentranceDepth =
-       _reentranceDepth -= 1
+    def decrementReentranceDepth =
+      _reentranceDepth -= 1
 
     def turnOn(q: QueryExpressionNode[_], rsm: ResultSetMapper) = {
       _reentranceDepth = 0
@@ -138,12 +138,10 @@ object FieldReferenceLinker {
       _resultSetMapper = rsm
     }
 
-    def outExpressions: List[SelectElement] = {
-      _utilizedFields.toList
-    }
+    def outExpressions: List[SelectElement] = _utilizedFields.toList
   }
-  
-  private val _yieldInspectionTL = new ThreadLocal[YieldInspection]
+
+  private[this] val _yieldInspectionTL = new ThreadLocal[YieldInspection]
 
   def putLastAccessedSelectElement(e: SelectElement) = {
     if (isYieldInspectionMode) {
@@ -164,12 +162,11 @@ object FieldReferenceLinker {
       case None => org.squeryl.internals.Utils.throwError("Thread local does not have a last accessed field... this is a severe bug !")
   }
 
-  def createEqualityExpressionWithLastAccessedFieldReferenceAndConstant(e: Any, c: Any): LogicalBoolean = {
-
-    if(e.isInstanceOf[CompositeKey])
-      e.asInstanceOf[CompositeKey].buildEquality(c.asInstanceOf[CompositeKey])
-    else
-      createEqualityExpressionWithLastAccessedFieldReferenceAndConstant(c)    
+  def createEqualityExpressionWithLastAccessedFieldReferenceAndConstant(e: Any, c: Any): LogicalBoolean = e match{
+    case k: CompositeKey =>
+      k.buildEquality(c.asInstanceOf[CompositeKey])
+    case _ =>
+      createEqualityExpressionWithLastAccessedFieldReferenceAndConstant(c)
   }
 
   def createEqualityExpressionWithLastAccessedFieldReferenceAndConstant(c: Any): LogicalBoolean = {
@@ -180,17 +177,17 @@ object FieldReferenceLinker {
       new InputOnlyConstantExpressionNode(c),
       "=")
   }
-  
+
   /**
    * It is assumed that yield invocation for inspection will never be nested, since
    * a query is completely built (and it's yield inspection is done) before it can
    * be nested, this is unlikely to change, but documenting this assumption was
    * deemed usefull, because this method would stop working (without complaining)
-   * if (the assumption) was broken.   
+   * if (the assumption) was broken.
    */
 
   def determineColumnsUtilizedInYeldInvocation(q: QueryExpressionNode[_], rsm: ResultSetMapper, selectClosure: ()=>AnyRef) = {
-    
+
     val yi = new YieldInspection
       _yieldInspectionTL.set(yi)
     var result:(List[SelectElement],AnyRef) = null
@@ -210,17 +207,17 @@ object FieldReferenceLinker {
         org.squeryl.internals.Utils.throwError("query " + q + " yielded null")
 
       val visitedSet = new java.util.IdentityHashMap[AnyRef, AnyRef]
-        
+
       _populateSelectColsRecurse(visitedSet, yi, q, res0)
 
       result = (yi.outExpressions, res0)
     }
     finally {
-      _yieldInspectionTL.remove()      
+      _yieldInspectionTL.remove()
     }
     result
   }
-  
+
   /*
    * The theory here is that setting the var is an atomic operation, so
    * it should be ok to perform without synchronization.
@@ -229,54 +226,52 @@ object FieldReferenceLinker {
    * can be retrieved at any time, that's ok.
    */
   private object _declaredFieldCache {
-  
-	  @volatile var _cache: Map[Class[_], Array[Field]] =
-			  Map[Class[_], Array[Field]]()
-			  
-	  def apply(cls: Class[_]) =
-	    _cache.get(cls) getOrElse {
-	      val declaredFields = cls.getDeclaredFields()
-	      _cache += ((cls, declaredFields))
-	      declaredFields
-	    }
-	  
+
+    @volatile var _cache: Map[Class[_], Array[Field]] = Map[Class[_], Array[Field]]()
+
+    def apply(cls: Class[_]) =
+      _cache.get(cls) getOrElse {
+        val declaredFields = cls.getDeclaredFields()
+        _cache += ((cls, declaredFields))
+        declaredFields
+      }
+
   }
 
   private def _populateSelectColsRecurse(visited: java.util.IdentityHashMap[AnyRef, AnyRef] , yi: YieldInspection,q: QueryExpressionElements, o: AnyRef): Unit =
-	  if(o != null && o != None) {
-		  if(!visited.containsKey(o)) {
-			  val clazz = o.getClass
-			  val clazzName = clazz.getName
-			  //println("Looking at " + clazzName)
-			  if(!clazzName.startsWith("java.") && 
-					  !clazzName.startsWith("net.sf.cglib.") && 
-					  !clazzName.startsWith("scala.Enumeration")) {
-				  visited.put(o,o)
-				  _populateSelectCols(yi, q, o)
-				  for(f <- _declaredFieldCache(clazz)) {
-					  f.setAccessible(true);
-					  val ob = f.get(o)
-					  if(!f.getName.startsWith("CGLIB$") && 
-					        !f.getType.getName.startsWith("scala.Function") && 
-					        !FieldMetaData.factory.hideFromYieldInspection(o, f)) {
-						  _populateSelectColsRecurse(visited, yi, q, ob)
-					  }
-				  }
-			  }
-		  }
-	  }
-  
-  
+    if(o != null && o != None) {
+      if(!visited.containsKey(o)) {
+        val clazz = o.getClass
+        val clazzName = clazz.getName
+        //println("Looking at " + clazzName)
+        if(!clazzName.startsWith("java.") &&
+            !clazzName.startsWith("net.sf.cglib.") &&
+            !clazzName.startsWith("scala.Enumeration")) {
+          visited.put(o,o)
+          _populateSelectCols(yi, q, o)
+          for(f <- _declaredFieldCache(clazz)) {
+            f.setAccessible(true);
+            val ob = f.get(o)
+            if(!f.getName.startsWith("CGLIB$") &&
+                  !f.getType.getName.startsWith("scala.Function") &&
+                  !FieldMetaData.factory.hideFromYieldInspection(o, f)) {
+              _populateSelectColsRecurse(visited, yi, q, ob)
+            }
+          }
+        }
+      }
+    }
+
+
   private def _populateSelectCols(yi: YieldInspection,q: QueryExpressionElements, sample: AnyRef): Unit = {
-    var owner = _findQENThatOwns(sample, q)
-    owner foreach { o =>
-      for(e <- o.getOrCreateAllSelectElements(q))
-    	  yi.addSelectElement(e)
+    val owner = _findQENThatOwns(sample, q)
+    owner.foreach {
+      _.getOrCreateAllSelectElements(q).foreach(yi.addSelectElement(_))
     }
   }
 
   def findOwnerOfSample(s: AnyRef): Option[QueryableExpressionNode] =
-// TODO: could we enforce that Query[AnyVal] are not nested in some other way ?   
+// TODO: could we enforce that Query[AnyVal] are not nested in some other way ?
 //    if(s.isInstanceOf[AnyVal])
 //      org.squeryl.internals.Utils.throwError("A query that returns a AnyVal cannot be nested " + Utils.failSafeString(FieldReferenceLinker.inspectedQueryExpressionNode.toString))
 //    else
@@ -289,61 +284,61 @@ object FieldReferenceLinker {
 
   def createCallBack(v: ViewExpressionNode[_]): Callback =
     new PosoPropertyAccessInterceptor(v)
-  
+
   private class PosoPropertyAccessInterceptor(val viewExpressionNode: ViewExpressionNode[_]) extends MethodInterceptor {
 
-      def fmd4Method(m: Method) =
-        viewExpressionNode.view.findFieldMetaDataForProperty(m.getName)
+    def fmd4Method(m: Method) =
+      viewExpressionNode.view.findFieldMetaDataForProperty(m.getName)
 
-      def intercept(o: Object, m: Method, args: Array[Object], proxy: MethodProxy): Object = {
+    def intercept(o: Object, m: Method, args: Array[Object], proxy: MethodProxy): Object = {
 
-        val fmd = fmd4Method(m)
-        val yi = if (isYieldInspectionMode) _yieldInspectionTL.get else null
-        val isComposite =
-          classOf[CompositeKey].isAssignableFrom(m.getReturnType)
+      val fmd = fmd4Method(m)
+      val yi = if (isYieldInspectionMode) _yieldInspectionTL.get else null
+      val isComposite =
+        classOf[CompositeKey].isAssignableFrom(m.getReturnType)
 
-        try {
-          if(fmd != None && yi != null)
-            yi.incrementReentranceDepth
+      try {
+        if(fmd != None && yi != null)
+          yi.incrementReentranceDepth
 
-          _intercept(o, m, args, proxy, fmd, yi, isComposite)
-        }
-        finally {
-          if(fmd != None && yi != null)
-            yi.decrementReentranceDepth
-        }
+        _intercept(o, m, args, proxy, fmd, yi, isComposite)
+      }
+      finally {
+        if(fmd != None && yi != null)
+          yi.decrementReentranceDepth
+      }
+    }
+
+    private def _intercept(o: Object, m: Method, args: Array[Object], proxy: MethodProxy, fmd: Option[FieldMetaData], yi: YieldInspection, isComposite: Boolean): Object = {
+
+      if(isComposite)
+        _compositeKeyMembers.set(Some(new ArrayBuffer[SelectElement]))
+
+      var res = proxy.invokeSuper(o, args);
+
+      if(isComposite) {
+        val ck = res.asInstanceOf[CompositeKey]
+        ck._members = Some(_compositeKeyMembers.get.get.map(new SelectElementReference[Any,Any](_,NoOpOutMapper)))
+        ck._propertyName = Some(m.getName)
+        _compositeKeyMembers.remove()
       }
 
-      private def _intercept(o: Object, m: Method, args: Array[Object], proxy: MethodProxy, fmd: Option[FieldMetaData], yi: YieldInspection, isComposite: Boolean): Object = {
+      if(m.getName.equals("toString") && m.getParameterTypes.length == 0)
+        res = "sample:"+viewExpressionNode.view.name+"["+Integer.toHexString(System.identityHashCode(o)) + "]"
 
-        if(isComposite)
-          _compositeKeyMembers.set(Some(new ArrayBuffer[SelectElement]))
+      if(fmd != None) {
 
-        var res = proxy.invokeSuper(o, args);
+        if(yi != null &&  yi.reentranceDepth == 1)
+          yi.addSelectElement(viewExpressionNode.getOrCreateSelectElement(fmd.get, yi.queryExpressionNode))
 
-        if(isComposite) {
-          val ck = res.asInstanceOf[CompositeKey]
-          ck._members = Some(_compositeKeyMembers.get.get.map(new SelectElementReference[Any,Any](_,NoOpOutMapper)))
-          ck._propertyName = Some(m.getName)
+        if(_compositeKeyMembers.get == null) {
           _compositeKeyMembers.remove()
-        }
-
-        if(m.getName.equals("toString") && m.getParameterTypes.length == 0)
-          res = "sample:"+viewExpressionNode.view.name+"["+Integer.toHexString(System.identityHashCode(o)) + "]"
-
-        if(fmd != None) {
-
-          if(yi != null &&  yi.reentranceDepth == 1)
-            yi.addSelectElement(viewExpressionNode.getOrCreateSelectElement(fmd.get, yi.queryExpressionNode))
-
-          if(_compositeKeyMembers.get == null) {
-            _compositeKeyMembers.remove()
-            _lastAccessedFieldReference = Some(viewExpressionNode.getOrCreateSelectElement(fmd.get));
-          } else
-            _compositeKeyMembers.get.get.append(viewExpressionNode.getOrCreateSelectElement(fmd.get))
-        }
-
-        res
+          _lastAccessedFieldReference = Some(viewExpressionNode.getOrCreateSelectElement(fmd.get));
+        } else
+          _compositeKeyMembers.get.get.append(viewExpressionNode.getOrCreateSelectElement(fmd.get))
       }
+
+      res
+    }
   }
 }

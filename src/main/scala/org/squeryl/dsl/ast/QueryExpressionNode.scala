@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@ class QueryExpressionNode[R](_query: AbstractQuery[R],
   extends QueryExpressionElements
     with QueryableExpressionNode {
 
-  def tableExpressions: Iterable[QueryableExpressionNode] = 
+  def tableExpressions: Iterable[QueryableExpressionNode] =
     List(views.filter(v => ! v.inhibited),
          subQueries.filter(v => ! v.inhibited)).flatten
 
@@ -35,9 +35,9 @@ class QueryExpressionNode[R](_query: AbstractQuery[R],
   val (whereClause, havingClause, groupByClause, orderByClause) =
      _queryYield.queryElements
 
-  private var _selectList: Iterable[SelectElement] = Iterable.empty
+  private[this] var _selectList: Iterable[SelectElement] = Iterable.empty
 
-  private var _sample: Option[AnyRef] = None
+  private[this] var _sample: Option[AnyRef] = None
 
   private def _isPrimitiveType(o: AnyRef) =
     o.getClass.isPrimitive
@@ -58,9 +58,9 @@ class QueryExpressionNode[R](_query: AbstractQuery[R],
 
   def sample:AnyRef = _sample.get
 
-  def owns(aSample: AnyRef) = 
+  def owns(aSample: AnyRef) =
     _sample != None && _sample.get.eq(aSample)
-  
+
   def getOrCreateSelectElement(fmd: FieldMetaData, forScope: QueryExpressionElements) = throw new UnsupportedOperationException("implement me")
 
   override def toString = {
@@ -79,11 +79,11 @@ class QueryExpressionNode[R](_query: AbstractQuery[R],
     lb ++= selectList
     lb ++= views
     lb ++= subQueries
-    lb ++= tableExpressions.filter(e=> e.joinExpression != None).map(_.joinExpression.get)  
+    lb ++= tableExpressions.filter(e=> e.joinExpression != None).map(_.joinExpression.get)
     lb ++= whereClause
     lb ++= groupByClause
     lb ++= havingClause
-    lb ++= orderByClause      
+    lb ++= orderByClause
     lb.toList
   }
 

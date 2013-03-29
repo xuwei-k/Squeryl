@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,9 +40,9 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
    * afterwards
    */
   def surrogate:StatementWriter = new StatementWriter(isForDisplay, databaseAdapter) {
-    
+
     indentWidth = outer.indentWidth
-    
+
     override def surrogate = outer.surrogate
 
     override def addParam(p: AnyRef) = outer.addParam(p)
@@ -50,7 +50,7 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
 
   def paramsZ: Iterable[AnyRef] = _paramList
 
-  private val _stringBuilder = new StringBuilder(256)
+  private[this] val _stringBuilder = new StringBuilder(256)
 
   def statement = _stringBuilder.toString
 
@@ -61,10 +61,10 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
       statement
     else
       _paramList.mkString(statement+"\njdbcParams:[",",","]")
-  
-  private val INDENT_INCREMENT = 2
-  
-  private var indentWidth = 0
+
+  private[this] val INDENT_INCREMENT = 2
+
+  private[this] var indentWidth = 0
 
   def indent(width: Int) = indentWidth += width
   def unindent(width: Int) = indentWidth -= width
@@ -73,16 +73,16 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
   def unindent: Unit = unindent(INDENT_INCREMENT)
 
   private def _dumpToConsole(s: String) = print(s)
-  
+
   private def _append(s: String) = {
     //_dumpToConsole(s)
     _flushPendingNextLine
     _stringBuilder.append(s)
   }
 
-  private def _writeIndentSpaces: Unit = 
+  private def _writeIndentSpaces: Unit =
     _writeIndentSpaces(indentWidth)
-  
+
   private def _writeIndentSpaces(c: Int) =
     for( i <- 1 to c)
       _append(" ")
@@ -92,7 +92,7 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
     _writeIndentSpaces
   }
 
-  private var _lazyPendingLine: Option[() => Unit] = None
+  private[this] var _lazyPendingLine: Option[() => Unit] = None
 
   def pushPendingNextLine =
    _lazyPendingLine = Some(()=> nextLine)
@@ -104,7 +104,7 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
       val lpl = pl.get
       lpl()
    }
-  
+
   def writeLines(s: String*) = {
     val size = s.size
     var c = 1

@@ -92,13 +92,11 @@ trait ExpressionNode {
     this
   }
 
-  def ? : this.type = {
-    if(! this.isInstanceOf[ConstantTypedExpression[_,_]])
+  def ? : this.type = this match{
+    case c: ConstantTypedExpression[_, _] =>
+      inhibitWhen(c.value == None)
+    case _ =>
       throw new UnsupportedOperationException("the '?' operator (shorthand for 'p.inhibitWhen(p == None))' can only be used on a constant query argument")
-
-    val c = this.asInstanceOf[ConstantTypedExpression[_,_]]
-
-    inhibitWhen(c.value == None)
   }
 }
 
@@ -225,7 +223,7 @@ trait BaseColumnAttributeAssignment {
 class ColumnGroupAttributeAssignment(cols: Seq[FieldMetaData], columnAttributes_ : Seq[ColumnAttribute])
   extends BaseColumnAttributeAssignment {
 
-  private val _columnAttributes = new ArrayBuffer[ColumnAttribute]
+  private[this] val _columnAttributes = new ArrayBuffer[ColumnAttribute]
 
   _columnAttributes.appendAll(columnAttributes_)
 
@@ -417,7 +415,7 @@ trait UniqueIdInAliaseRequired  {
 
 trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequired {
 
-  private var _inhibited = false
+  private[this] var _inhibited = false
 
   override def inhibited = _inhibited
 
@@ -432,8 +430,7 @@ trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequir
   // new join syntax
   var joinKind: Option[(String,String)] = None
 
-  def isOuterJoined =
-    joinKind != None && joinKind.get._2 == "outer"
+  def isOuterJoined = joinKind.exists(_._2 == "outer")
 
   var joinExpression: Option[LogicalBoolean] = None
 
@@ -466,7 +463,7 @@ trait QueryableExpressionNode extends ExpressionNode with UniqueIdInAliaseRequir
 
 class OrderByArg(val e: ExpressionNode) {
 
-  private var _ascending = true
+  private[this] var _ascending = true
 
   private [squeryl] def isAscending = _ascending
 

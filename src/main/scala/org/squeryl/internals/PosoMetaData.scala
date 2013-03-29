@@ -33,7 +33,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
   def findFieldMetaDataForProperty(name: String) =
      _fieldsMetaData.find(fmd => fmd.nameOfProperty == name)
 
-  val isOptimistic = viewOrTable.ked.map(_.isOptimistic).getOrElse(false)
+  val isOptimistic = viewOrTable.ked.exists(_.isOptimistic)
 
   val constructor =
     _const.headOption.orElse(org.squeryl.internals.Utils.throwError(clasz.getName +
@@ -195,7 +195,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
   def createSample(cb: Callback) =
     FieldReferenceLinker.executeAndRestoreLastAccessedFieldReference(_builder(cb))
 
-  private val _builder: (Callback) => T = {
+  private[this] val _builder: (Callback) => T = {
     val e = new Enhancer
     e.setSuperclass(clasz)
     val pc: Array[Class[_]] = constructor._1.getParameterTypes

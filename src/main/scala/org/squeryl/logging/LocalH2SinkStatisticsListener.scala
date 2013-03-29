@@ -29,7 +29,7 @@ object LocalH2SinkStatisticsListener {
       using(s) {
         StatsSchema.create
       }
-      
+
     val l = new LocalH2SinkStatisticsListener(s)
     l
   }
@@ -37,11 +37,11 @@ object LocalH2SinkStatisticsListener {
 
 class LocalH2SinkStatisticsListener(val h2Session: Session) extends StatisticsListener {
 
-  private var _closed = false
+  private[this] var _closed = false
 
-  private val _queue = new java.util.concurrent.ArrayBlockingQueue[()=>Unit](1024, false)
+  private[this] val _queue = new java.util.concurrent.ArrayBlockingQueue[()=>Unit](1024, false)
 
-  private val _worker = new Thread {
+  private[this] val _worker = new Thread {
 
     override def run() {
       h2Session.bindToCurrentThread

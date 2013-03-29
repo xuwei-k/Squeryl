@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ import org.squeryl.{Session, View}
 class ViewExpressionNode[U](val view: View[U])
   extends QueryableExpressionNode {
 
-  private val _selectElements = new HashMap[FieldMetaData,SelectElement]
+  private[this] val _selectElements = new HashMap[FieldMetaData,SelectElement]
 
   def isChild(q: QueryableExpressionNode) = false
 
@@ -38,15 +38,11 @@ class ViewExpressionNode[U](val view: View[U])
 
   private def getOrCreateSelectElement(fmd: FieldMetaData, export: Boolean): SelectElement = {
 
-    val e = _selectElements.get(fmd)
-    val n =
-      if(e != None)
-        e.get
-      else {
-        val r = new FieldSelectElement(this, fmd, resultSetMapper)
-        _selectElements.put(fmd, r)
-        r
-      }
+    val n = _selectElements.get(fmd).getOrElse{
+      val r = new FieldSelectElement(this, fmd, resultSetMapper)
+      _selectElements.put(fmd, r)
+      r
+    }
 
     if(export)
       new ExportedSelectElement(n)
@@ -68,7 +64,7 @@ class ViewExpressionNode[U](val view: View[U])
 
   def owns(aSample: AnyRef) = aSample eq sample.asInstanceOf[AnyRef]
 
-  private var _sample: Option[U] = None
+  private[this] var _sample: Option[U] = None
 
   private[squeryl] def sample_=(d:U) =
     _sample = Some(d)
@@ -76,7 +72,7 @@ class ViewExpressionNode[U](val view: View[U])
   def sample = _sample.get
 
   def doWrite(sw: StatementWriter) =
-      sw.write(sw.quoteName(view.prefixedName))
+    sw.write(sw.quoteName(view.prefixedName))
 
   override def toString = {
     val sb = new StringBuffer
