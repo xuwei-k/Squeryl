@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010 Maxime Lévesque 
+ * Copyright 2010 Maxime Lévesque
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,23 @@ import java.sql.SQLException
 
 @scala.annotation.implicitNotFound(msg = "The method requires an implicit org.squeryl.KeyedEntityDef[${A}, ${K}] in scope, or that it extends the trait KeyedEntity[${K}]")
 trait KeyedEntityDef[-A,K] extends OptionalKeyedEntityDef[A,K]{
-  
+
   def getId(a: A): K
   /**
    * returns true if the given instance has been persisted
    */
   def isPersisted(a: A):  Boolean
   /**
-   * the (Scala) property/field name of the id 
+   * the (Scala) property/field name of the id
    */
   def idPropertyName: String
   /**
    * the counter field name for OCC, None to disable OCC (optimistic concurrency control)
    */
   def optimisticCounterPropertyName: Option[String] = None
-  
+
   private [squeryl] def isOptimistic = optimisticCounterPropertyName.isDefined
-  
+
   /**
    * fulfills the contract of OptionalKeyedEntityDef
    */
@@ -57,12 +57,12 @@ trait OptionalKeyedEntityDef[-A,K] {
  *
  * Since Peanut extends KeyedEntity the delete(l:Long)
  * method is available
- *  
+ *
  * def removePeanut(idOfThePeanut: Long) =
  *   peanutJar.delete(idOfThePeanut)
  *
  * And lookup by id is also implicitly available :
- * 
+ *
  * peanutJar.lookup(idOfThePeanut)
  *
  */
@@ -101,7 +101,7 @@ trait PersistenceStatus {
 }
 
 trait IndirectKeyedEntity[K,T] extends KeyedEntity[K] {
-  
+
   def idField: T
 }
 
@@ -156,7 +156,7 @@ class ForeignKeyDeclaration(val idWithinSchema: Int, val foreignKeyColumnName: S
     _referentialActions.get._2
 
   /**
-   * Causes the foreign key to have no constraint 
+   * Causes the foreign key to have no constraint
    */
   def unConstrainReference()(implicit ev: Schema) =
     _referentialActions = None
@@ -169,14 +169,14 @@ class ForeignKeyDeclaration(val idWithinSchema: Int, val foreignKeyColumnName: S
     _referentialActions = Some((None, None))
 
   /**
-   * Does the same as constrainReference, plus adds a ReferentialAction (ex.: foreignKeyDeclaration.constrainReference(onDelete cascade)) 
+   * Does the same as constrainReference, plus adds a ReferentialAction (ex.: foreignKeyDeclaration.constrainReference(onDelete cascade))
    */
   def constrainReference(a1: ReferentialAction)(implicit ev: Schema) =
     _referentialActions = Some((Some(a1), None))
 
   /**
    * Does the same as constrainReference, plus adds two ReferentialActions
-   * (ex.: foreignKeyDeclaration.constrainReference(onDelete cascade, onUpdate restrict)) 
+   * (ex.: foreignKeyDeclaration.constrainReference(onDelete cascade, onUpdate restrict))
    */
   def constrainReference(a1: ReferentialAction, a2: ReferentialAction)(implicit ev: Schema) =
     _referentialActions = Some((Some(a1), Some(a2)))

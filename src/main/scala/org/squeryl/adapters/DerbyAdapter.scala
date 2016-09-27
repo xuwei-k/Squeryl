@@ -61,7 +61,7 @@ class DerbyAdapter extends DatabaseAdapter {
       sw.pushPendingNextLine
     })
   }
-  
+
   override def isTableDoesNotExistException(e: SQLException) =
     e.getSQLState == "42Y55"
 

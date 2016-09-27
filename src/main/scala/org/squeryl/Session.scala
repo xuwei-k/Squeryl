@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -251,7 +251,7 @@ object SessionFactory {
 
   /**
    * Initializing concreteFactory with a Session creating closure enables the use of
-   * the 'transaction' and 'inTransaction' block functions 
+   * the 'transaction' and 'inTransaction' block functions
    */
   var concreteFactory: Option[()=>AbstractSession] = None
 
@@ -260,7 +260,7 @@ object SessionFactory {
    * execute Squeryl statements *without* the need of using 'transaction' and 'inTransaction'.
    * The use case for this is to allow Squeryl connection/transactions to be managed by an
    * external framework. In this case Session.cleanupResources *needs* to be called when connections
-   * are closed, otherwise statement of resultset leaks can occur. 
+   * are closed, otherwise statement of resultset leaks can occur.
    */
   var externalTransactionManagementAdapter: Option[()=>Option[AbstractSession]] = None
 
@@ -269,7 +269,7 @@ object SessionFactory {
         throw new IllegalStateException("org.squeryl.SessionFactory not initialized, SessionFactory.concreteFactory must be assigned a \n"+
               "function for creating new org.squeryl.Session, before transaction can be used.\n" +
               "Alternatively SessionFactory.externalTransactionManagementAdapter can initialized, please refer to the documentation.")
-      ).apply        
+      ).apply
 }
 
 object Session {
@@ -277,13 +277,13 @@ object Session {
   /**
    * Note about ThreadLocals: all thread locals should be .removed() before the
    * transaction ends.
-   * 
+   *
    * Leaving a ThreadLocal inplace after the control returns to the user thread
    * will pollute the users threads and will cause problems for e.g. Tomcat and
    * other servlet engines.
    */
   private val _currentSessionThreadLocal = new ThreadLocal[AbstractSession]
-  
+
   def create(c: Connection, a: DatabaseAdapter) =
     new Session(c,a)
 
@@ -311,7 +311,7 @@ object Session {
 
   private[squeryl] def currentSession_=(s: Option[AbstractSession]) =
     if (s == None) {
-      _currentSessionThreadLocal.remove()        
+      _currentSessionThreadLocal.remove()
     } else {
       _currentSessionThreadLocal.set(s.get)
     }

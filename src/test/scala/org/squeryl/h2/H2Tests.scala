@@ -9,12 +9,12 @@ import org.squeryl.{AbstractSession, Session}
 import java.sql.Connection
 
 /*
- * To run on command line : 
- * 
+ * To run on command line :
+ *
  * org.scalatest.tools.Runner -s org.squeryl.h2.H2_SchoolDb -eNDXEHLOW
- * 
+ *
  * org.scalatest.tools.Runner -s org.squeryl.h2.H2_SchoolDb -eNDXEHLOW -n SingleTestRun
- * 
+ *
  * */
 
 trait H2_ConnectionCommon extends DBConnector {

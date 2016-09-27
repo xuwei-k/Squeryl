@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,10 +56,10 @@ object Utils {
   def close(c: Connection) =
     try {c.close}
     catch {case e:SQLException => {}}
-    
+
   private class DummyQueryElements[Cond](override val whereClause: Option[()=>LogicalBoolean]) extends QueryElements[Cond]
-  
-  
+
+
   private class DummyQuery[A,B](q: Queryable[A],f: A=>B, g: B=>Unit) extends Query1[A,Int](
     q,
     a => {
@@ -80,7 +80,7 @@ object Utils {
 
   def createQuery4WhereClause[A](q: Queryable[A], whereClause: A=>LogicalBoolean): QueryExpressionElements =
     new DummyQuery4WhereClause(q, whereClause).ast
-  
+
   /**
    * visitor will get applied on a proxied Sample object of the Queryable[A],
    * this function is used for obtaining AST nodes or metadata from A.
@@ -110,9 +110,9 @@ object Utils {
 class IteratorConcatenation[R](first: Iterator[R], second: Iterator[R]) extends Iterator[R] {
 
   var currentIterator = first
-    
+
   def _hasNext =
-    if(currentIterator.hasNext) 
+    if(currentIterator.hasNext)
       true
     else if(currentIterator == second)
       false
@@ -122,7 +122,7 @@ class IteratorConcatenation[R](first: Iterator[R], second: Iterator[R]) extends 
     }
 
   def hasNext = _hasNext
-  
+
   def next = {
     _hasNext
     currentIterator.next

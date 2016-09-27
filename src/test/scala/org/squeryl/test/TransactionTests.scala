@@ -31,8 +31,8 @@ abstract class TransactionTests extends DbTestBase {
       throwExc(except)
     }
   }
-  
-  def returnInTransaction: Int =  
+
+  def returnInTransaction: Int =
     transaction {
       val foo1 = FooSchema.foos.insert(new Foo("test"))
       return 1
@@ -88,7 +88,7 @@ abstract class TransactionTests extends DbTestBase {
       assert(FooSchema.foos.where(f => f.value === "test").size == 1)//should equal(1)
     }
   }
-  
+
   test("Returning inside transaction block"){
     transaction {
       FooSchema.reset
@@ -99,24 +99,24 @@ abstract class TransactionTests extends DbTestBase {
       assert(FooSchema.foos.where(f => f.value === "test").size == 1)//should equal(1)
     }
   }
-  
+
   test("nested transactions with SessionFactory") {
 
    val sf1  = new SessionFactory {
      def newSession: AbstractSession = sessionCreator().get()
-   }    
-   
+   }
+
    val sf2  = new SessionFactory {
      def newSession: AbstractSession = Utils.throwError("inner inTransaction sould not be started")
    }
-   
-   
+
+
    inTransaction(sf1) {
-     
+
      inTransaction(sf2) {
-       
+
      }
    }
   }
-  
+
 }

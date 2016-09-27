@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,13 +40,13 @@ class PostgreSqlAdapter extends DatabaseAdapter {
   override def bigDecimalTypeDeclaration(precision:Int, scale:Int) = "numeric(" + precision + "," + scale + ")"
   override def binaryTypeDeclaration = "bytea"
   override def uuidTypeDeclaration = "uuid"
-    
-    
+
+
   override def jdbcIntArrayCreationType = "int4"
   override def jdbcLongArrayCreationType = "int8"
   override def jdbcDoubleArrayCreationType = "float8"
   override def jdbcStringArrayCreationType = "varchar"
-    
+
   override def foreignKeyConstraintName(foreignKeyTable: Table[_], idWithinSchema: Int) =
     foreignKeyTable.name + "FK" + idWithinSchema
 
@@ -65,7 +65,7 @@ class PostgreSqlAdapter extends DatabaseAdapter {
       else
         printSinkWhenWriteOnlyMode.get.apply(sw.statement + ";")
     }
-  }                                               
+  }
 
   def sequenceName(t: Table[_]) =
     if (usePostgresSequenceNamingScheme) {
@@ -88,7 +88,7 @@ class PostgreSqlAdapter extends DatabaseAdapter {
 
   override def writeConcatFunctionCall(fn: FunctionNode, sw: StatementWriter) =
     sw.writeNodesWithSeparator(fn.args, " || ", false)
-  
+
   override def writeInsert[T](o: T, t: Table[T], sw: StatementWriter): Unit = {
 
     val o_ = o.asInstanceOf[AnyRef]
@@ -148,9 +148,9 @@ class PostgreSqlAdapter extends DatabaseAdapter {
     "alter table " + quoteName(foreignKeyTable.prefixedName) + " drop constraint " + quoteName(fkName)
 
   override def failureOfStatementRequiresRollback = true
-  
+
   override def postDropTable(t: Table[_]) = {
-    
+
     val autoIncrementedFields = t.posoMetaData.fieldsMetaData.filter(_.isAutoIncremented)
 
     for(fmd <-autoIncrementedFields) {

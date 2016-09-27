@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 package org.squeryl.internals
- 
+
 
 import java.lang.Class
 import java.lang.annotation.Annotation
@@ -33,17 +33,17 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
      _fieldsMetaData.find(fmd => fmd.nameOfProperty == name)
 
   val isOptimistic = viewOrTable.ked.map(_.isOptimistic).getOrElse(false)
-  
+
   val constructor =
     _const.headOption.orElse(org.squeryl.internals.Utils.throwError(clasz.getName +
             " must have a 0 param constructor or a constructor with only primitive types")).get
 
   def fieldsMetaData =
     _fieldsMetaData.filter(! _.isTransient)
-    
+
   /**
    * @arg fieldsMetaData the metadata of the persistent fields of this Poso
-   * @arg primaryKey None if this Poso is not a KeyedEntity[], Either[a persistedField, a composite key]  
+   * @arg primaryKey None if this Poso is not a KeyedEntity[], Either[a persistedField, a composite key]
    */
   val (_fieldsMetaData, primaryKey): (Iterable[FieldMetaData], Option[Either[FieldMetaData,Method]]) = {
 
@@ -61,7 +61,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
         case e:Exception =>
           throw new RuntimeException("exception occurred while invoking constructor : " + constructor._1, e)
       }
-    
+
     val members = new ArrayBuffer[(Member,HashSet[Annotation])]
 
     _fillWithMembers(clasz, members)
@@ -111,7 +111,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
 
       if(isImplicitMode && _groupOfMembersIsProperty(property)) {
         val isOptimisitcCounter =
-          (for(k <- viewOrTable.ked; 
+          (for(k <- viewOrTable.ked;
               counterProp <- k.optimisticCounterPropertyName if counterProp == name) yield true).isDefined
         try {
           val r = FieldMetaData.factory.build(this, name, property, sampleInstance4OptionTypeDeduction, isOptimisitcCounter)
@@ -124,7 +124,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
 
             throw new RuntimeException(
               Utils.failSafeString(
-              "error while reflecting on metadata for " + property + 
+              "error while reflecting on metadata for " + property +
               " of class " + this.clasz.getCanonicalName), e)
         }
       }
@@ -138,7 +138,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
       else {
         // verify if we have an 'id' method that is a composite key, in this case we need to construct a
         // FieldMetaData that will become the 'primaryKey' field of this PosoMetaData
-        
+
         viewOrTable.ked.map { ked =>
 
           val pkMethod = clasz.getMethod(ked.idPropertyName)
@@ -156,7 +156,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
         Some(Right(compositePrimaryKeyGetter.get))
       else
         None
-    
+
     (fmds, metaDataForPk) //: (Iterable[FieldMetaData], Option[Either[FieldMetaData,Method]])
   }
 
@@ -172,7 +172,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
 
 //    for(ct <- clasz.getConstructors)
 //      println("CT: " + ct.getParameterTypes.map(c=>c.getName).mkString(","))
-    
+
     for(ct <- clasz.getConstructors)
       _tryToCreateParamArray(r, ct)
 
@@ -229,7 +229,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
       val cb = Array[Callback](callB, NoOp.INSTANCE)
       e.setCallbacks(cb)
       e.setCallbackFilter(PosoMetaData.finalizeFilter)
-      //TODO : are we creating am unnecessary instance ?  
+      //TODO : are we creating am unnecessary instance ?
       val fac = e.create(pc , constructor._2).asInstanceOf[Factory]
 
       fac.newInstance(pc, constructor._2, cb).asInstanceOf[T]
@@ -237,7 +237,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
   }
 
   private def _isImplicitMode = {
-    
+
     val rowAnnotation = clasz.getAnnotation(classOf[Row])
 
     rowAnnotation == null ||
@@ -295,7 +295,7 @@ class PosoMetaData[T](val clasz: Class[T], val schema: Schema, val viewOrTable: 
 
   private def _includeAnnotation(a: Annotation) =
    a.isInstanceOf[ColumnBase] || a.isInstanceOf[Transient] || a.isInstanceOf[OptionType]
-  
+
   private def _addAnnotations(m: Field, s: HashSet[Annotation]) =
     for(a <- m.getAnnotations if _includeAnnotation(a))
       s.add(a)

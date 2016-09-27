@@ -53,7 +53,7 @@ class Derby_MusicDb extends musicdb.MusicDbTestRun with Derby_Connection {
     "testSQLMatchCaseNumerical2Numerical",
     "testSQLMatchCaseNumericalWithOption2Numerical",
     "testSQLMatchCaseEnemerationWitEnemeration",
-    "testSQLMatchCaseEnemerationWithOption2Numerical"    
+    "testSQLMatchCaseEnemerationWithOption2Numerical"
   )
 }
 

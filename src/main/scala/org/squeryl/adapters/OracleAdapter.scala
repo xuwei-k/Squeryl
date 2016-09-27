@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ class OracleAdapter extends DatabaseAdapter {
     val autoIncrementedFields = t.posoMetaData.fieldsMetaData.filter(_.isAutoIncremented)
 
     for(fmd <-autoIncrementedFields) {
-      
+
       val sw = new StatementWriter(false, this)
       sw.write("create sequence ", fmd.sequenceName, " start with 1 increment by 1 nomaxvalue")
 
@@ -68,7 +68,7 @@ class OracleAdapter extends DatabaseAdapter {
   }
 
   override def createSequenceName(fmd: FieldMetaData) = {
-    
+
     val prefix = "s_" + fmd.columnName.take(6) + "_" + fmd.parentMetaData.viewOrTable.name.take(10)
 
     // prefix is no longer than 19, we will pad it with a suffix no longer than 11 :
@@ -77,7 +77,7 @@ class OracleAdapter extends DatabaseAdapter {
 
     shrunkName
   }
-    
+
   override def writeInsert[T](o: T, t: Table[T], sw: StatementWriter):Unit = {
 
     val o_ = o.asInstanceOf[AnyRef]
@@ -122,7 +122,7 @@ class OracleAdapter extends DatabaseAdapter {
   override def writeQuery(qen: QueryExpressionElements, sw: StatementWriter) =
     if(qen.page == None)
       super.writeQuery(qen, sw)
-    else {        
+    else {
       sw.write("select sq____1.* from (")
       sw.nextLine
       sw.writeIndented {
@@ -206,7 +206,7 @@ class OracleAdapter extends DatabaseAdapter {
       scope.add(res)
       //println(identifier + "----->" + res)
       res
-    }  
+    }
 
   override def writeSelectElementAlias(se: SelectElement, sw: StatementWriter) =
     sw.write(shrinkTo30AndPreserveUniquenessInScope(se.aliasSegment, sw.scope))
@@ -221,7 +221,7 @@ class OracleAdapter extends DatabaseAdapter {
     sw.write(" REGEXP_LIKE(")
     left.write(sw)
     sw.write(",?)")
-    sw.addParam(ConstantStatementParam(InternalFieldMapper.stringTEF.createConstant(pattern)))    
+    sw.addParam(ConstantStatementParam(InternalFieldMapper.stringTEF.createConstant(pattern)))
   }
 
   override def fieldAlias(n: QueryableExpressionNode, fse: FieldSelectElement) =
@@ -233,7 +233,7 @@ class OracleAdapter extends DatabaseAdapter {
 
   override def viewAlias(vn: ViewExpressionNode[_]) =
     "t" + vn.uniqueId.get
-/*    
+/*
   override def writeCastInvocation(e: TypedExpression[_,_], sw: StatementWriter) = {
     sw.write("cast(")
     e.write(sw)
@@ -241,20 +241,20 @@ class OracleAdapter extends DatabaseAdapter {
     val dbSpecificType = databaseTypeFor(e.mapper.jdbcClass)
 
     sw.write(" as ")
-    
+
     if(dbSpecificType == stringTypeDeclaration)
       sw.write(stringTypeDeclaration(1024))
     else
       sw.write(dbSpecificType)
-      
+
     sw.write(")")
   }
-*/    
+*/
 }
 
 
 object OracleAdapter {
-  
+
   val legalOracleSuffixChars =
      "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789".toCharArray.toList
 }

@@ -20,7 +20,7 @@ import collection.mutable.{HashMap, ArrayBuffer}
 import org.squeryl.KeyedEntityDef
 
 trait Relation[L,R] {
-  
+
   def leftTable: Table[L]
 
   def rightTable: Table[R]
@@ -44,7 +44,7 @@ class StatefulOneToMany[M](val relation: OneToMany[M]) extends Iterable[M] {
   private val _buffer = new ArrayBuffer[M]
 
   refresh
-  
+
   def refresh = {
     _buffer.clear
     for(m <- relation.iterator.toSeq)
@@ -72,7 +72,7 @@ class StatefulManyToOne[O](val relation: ManyToOne[O]) {
 
   refresh
 
-  def refresh = 
+  def refresh =
     _one = relation.iterator.toSeq.headOption
 
   def one = _one
@@ -120,15 +120,15 @@ trait ManyToManyRelation[L, R, A] extends Relation[L,R] {
  * this trait extends Query[O] and can be queried against like a normal query.
  *
  * Note that this trait is used on both "left" and "right" sides of the relation,
- * but in a given relation  
+ * but in a given relation
  */
 trait ManyToMany[O,A] extends Query[O] {
 
   def kedL: KeyedEntityDef[O,_]
-  
+
   /**
    * @param a: the association object
-   * 
+   *
    * Sets the foreign keys of the association object to the primary keys of the left and right side,
    * this method does not update the database, changes to the association object must be done for
    * the operation to be persisted. Alternatively the method 'associate(o, a)' will call this assign(o, a)
@@ -158,7 +158,7 @@ trait ManyToMany[O,A] extends Query[O] {
    *
    * Note that this method will fail if the association object has NOT NULL constraint fields appart from the
    * foreign keys in the relations
-   *  
+   *
    */
   def associate(o: O): A
 
@@ -176,7 +176,7 @@ trait ManyToMany[O,A] extends Query[O] {
   def dissociateAll: Int
 
   /**
-   * a Query returning all of this member's association entries 
+   * a Query returning all of this member's association entries
    */
   def associations: Query[A]
 
@@ -188,7 +188,7 @@ trait ManyToMany[O,A] extends Query[O] {
 
 
 class StatefulManyToMany[O,A](val relation: ManyToMany[O,A]) extends Iterable[O] {
-  
+
   private val _map = new HashMap[O,A]
 
   refresh
@@ -229,7 +229,7 @@ class StatefulManyToMany[O,A](val relation: ManyToMany[O,A]) extends Iterable[O]
   }
 
   def associations: Iterable[A] =
-    _map.values.toSeq  
+    _map.values.toSeq
 }
 
 
@@ -251,7 +251,7 @@ trait OneToMany[M] extends Query[M] {
    * @return the 'm' parameter is returned
    */
   def associate(m: M): M
-  
+
   def deleteAll: Int
 }
 

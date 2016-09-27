@@ -36,9 +36,9 @@ class SQLiteAdapter extends DatabaseAdapter {
       if(v.isInstanceOf[String])
         res += " default '" + v + "'"
       else
-        res += " default " + v 
+        res += " default " + v
     }
-    
+
     if(!fmd.isOption)
       res += " not null"
 

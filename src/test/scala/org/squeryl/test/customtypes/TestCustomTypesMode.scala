@@ -2,13 +2,13 @@ package org.squeryl.test.customtypes
 
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -65,7 +65,7 @@ abstract class TestCustomTypesMode extends SchemaTester with Matchers with Query
 
     jose.patientInfo.assign(pi0)
     assert(jose.id.value == pi0.patientId.value)
-    patientInfo.insert(pi0)        
+    patientInfo.insert(pi0)
 
     jose.patientInfo.associate(pi)
 
@@ -80,7 +80,7 @@ class TestData(schema : HospitalDb){
 object HospitalDb extends HospitalDb
 
 class HospitalDb extends Schema {
-  
+
   val patients = table[Patient]
 
   val patientInfo = table[PatientInfo]
@@ -88,7 +88,7 @@ class HospitalDb extends Schema {
   val patienttoPatientInfo =
       oneToManyRelation(patients, patientInfo).
       via((p,pi) => p.id === pi.patientId)
-  
+
   override def drop = super.drop
 }
 
@@ -104,7 +104,7 @@ class Patient(var firstName: FirstName, var age: Option[Age], var weight: Option
 class PatientInfo(val info: Info) extends KeyedEntity[IntField] {
 
   def this() = this(new Info(""))
-  
+
   val patientId: IntField = null
 
   val id: IntField = null
@@ -114,7 +114,7 @@ class PatientInfo(val info: Info) extends KeyedEntity[IntField] {
 
 /**
  * En example of trait that can be added to custom types,
- * to add meta data and validation 
+ * to add meta data and validation
  */
 trait Domain[A] {
   self: Product1[Any] =>
@@ -129,7 +129,7 @@ trait Domain[A] {
 class Age(v: Int) extends IntField(v) with Domain[Int] {
   // secondary constructor to show  #93
   def this(s: String) = this(s.toInt)
-  
+
   def validate(a: Int) = assert(a > 0, "age must be positive, got " + a)
   def label = "age"
 }
@@ -140,7 +140,7 @@ class FirstName(v: String) extends StringField(v) with Domain[String] {
 }
 
 class WeightInKilograms(v: Double) extends DoubleField(v) with Domain[Double] {
-  def validate(d:Double) = assert(d > 0, "weight must be positive, got " + d) 
+  def validate(d:Double) = assert(d > 0, "weight must be positive, got " + d)
   def label = "weight (in kilograms)"
 }
 

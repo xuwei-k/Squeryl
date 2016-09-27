@@ -51,7 +51,7 @@ class MusicDbObject extends KeyedEntity[Int] {
 }
 
 @SerialVersionUID(7397250327804824253L)
-class Person(var firstName:String, var lastName: String, val age: Option[Int], val created: Option[Timestamp] = None) 
+class Person(var firstName:String, var lastName: String, val age: Option[Int], val created: Option[Timestamp] = None)
   extends MusicDbObject with java.io.Serializable {
   def this() = this("", "", None)
 }
@@ -106,9 +106,9 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
   val schema = new MusicDb
 
   import schema._
-  
+
   var sharedTestInstance : TestData = null
-  
+
   override def prePopulate(){
     sharedTestInstance = new TestData(schema)
   }
@@ -120,7 +120,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
 
   test("JoinWithCompute"){
     val testInstance = sharedTestInstance; import testInstance._
-    
+
     val q =
       join(artists,songs.leftOuter)((a,s)=>
         groupBy(a.id, a.firstName)
@@ -160,7 +160,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
       artistIdsWithoutSongs, 'testOuterJoinWithSubQuery)
 
     val artistIdsWithSongs = q.filter(_._2 != None).map(_._1.id).toSet
-    
+
     assertEquals(
       Set(herbyHancock.id,ponchoSanchez.id,mongoSantaMaria.id),
       artistIdsWithSongs, 'testOuterJoinWithSubQuery)
@@ -506,7 +506,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
             select(&(upper(a.firstName) || lower(a.firstName)))
             orderBy(a.firstName)
           )
-        
+
 
         val testInstance = sharedTestInstance; import testInstance._
 
@@ -543,11 +543,11 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     val testInstance = sharedTestInstance; import testInstance._
 
     var mongo = artists.where(_.firstName === mongoSantaMaria.firstName).single
-    // round to 0 second : 
+    // round to 0 second :
     mongo = _truncateTimestampInTimeOfLastUpdate(mongo)
 
     val tX1 = mongo.timeOfLastUpdate
-    
+
     val cal = Calendar.getInstance
     cal.setTime(mongo.timeOfLastUpdate)
     cal.roll(Calendar.SECOND, 12);
@@ -555,7 +555,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     val tX2 = new Timestamp(cal.getTimeInMillis)
 
     mongo.timeOfLastUpdate = new Timestamp(cal.getTimeInMillis)
-    
+
 
     artists.update(mongo)
     mongo = artists.where(_.firstName === mongoSantaMaria.firstName).single
@@ -581,7 +581,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
 
     cal.setTime(t1)
     cal.set(Calendar.SECOND, 0);
-    cal.set(Calendar.MILLISECOND, 0);    
+    cal.set(Calendar.MILLISECOND, 0);
 
     p.timeOfLastUpdate = new Timestamp(cal.getTimeInMillis)
     val testInstance = sharedTestInstance; import testInstance._
@@ -642,7 +642,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     // MySql  : http://bugs.mysql.com/bug.php?id=8523
     // MSSQL  : http://stackoverflow.com/questions/2620627/ms-sql-datetime-precision-problem
     val testInstance = sharedTestInstance; import testInstance._
-    
+
     val dbAdapter = Session.currentSession.databaseAdapter
     if(!dbAdapter.isInstanceOf[MSSQLServer] && !dbAdapter.isInstanceOf[OracleAdapter]) {// FIXME or investigate millisecond handling of each DB:
 
@@ -664,7 +664,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
       if(!dbAdapter.isInstanceOf[MySQLAdapter]) {
         assertEquals(tX2, mongo.timeOfLastUpdate, 'testTimestampDownToMillis)
       }
-      
+
       passed('testTimestampDownToMillis)
     }
   }
@@ -673,7 +673,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     val timestamp = new Timestamp(0L)
     from(artists)(a => select(nvl(a.created, new Timestamp(10L)) >= timestamp)).size should be >= 0
   }
-  
+
   test("validateScalarQuery1") {
     val cdCount: Long = countCds2(cds)
     assert(cdCount == 2, "exprected 2, got " + cdCount + " from " + countCds2(cds))
@@ -681,7 +681,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
   }
 
   test("validateScalarQueryConversion1") {
-    
+
     val d:Option[Double] = avgSongCountForAllArtists
     //println("d=" + d)
     assert(d.get == 1.0, "expected " + 1.0 +"got "  +d)
@@ -865,30 +865,30 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
       where(s.genre in (gs))
       select(s)
     )
-    assertEquals(mainstream.size, 
-                 songs.where(s => s.genre === gs(0) or s.genre === gs(1)).size, 
+    assertEquals(mainstream.size,
+                 songs.where(s => s.genre === gs(0) or s.genre === gs(1)).size,
                  "expected 2 Jazz/Rock pieces")
   }
 
   test("Enums with groupBy", SingleTestRun){
     val testInstance = sharedTestInstance; import testInstance._
-    
-    
+
+
     val allKnownGenres = from(songs)(s =>
       groupBy(s.genre)
     ).map(_.key).toSet
-    
-    
+
+
     assert(allKnownGenres == Set(Genre.Jazz, Genre.Latin))
-    
+
     val allKnownSecondaryGenres = from(songs)(s =>
       groupBy(s.secondaryGenre)
     ).map(_.key).toSet
-    
-    
+
+
     assert(allKnownSecondaryGenres == Set(None, Some(Genre.Latin)))
   }
-  
+
   test("Enums Inhibit"){
     val testInstance = sharedTestInstance; import testInstance._
 
@@ -897,12 +897,12 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
         where(Option(s.genre) === genreFilter.?)
         select(s)
       )
-    assertEquals(listSongs(Some(Jazz)).size, 
-                 songs.where(s => s.genre === Jazz).size, 
+    assertEquals(listSongs(Some(Jazz)).size,
+                 songs.where(s => s.genre === Jazz).size,
                  "expected all Jazz pieces")
     assertEquals(listSongs(None).size, songs.allRows.size, "expected all songs")
   }
-  
+
   test("Enums"){
     val testInstance = sharedTestInstance; import testInstance._
     val testAssemblaIssue9 =
@@ -923,7 +923,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     assertEquals(q, Set(watermelonMan.id, freedomSound.id), "testEnum failed")
 
     var wmm = songs.where(_.id === watermelonMan.id).single
-    
+
     wmm.genre = Genre.Latin
 
     //loggerOn
@@ -1007,14 +1007,14 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
 
   def dynamicWhereOnArtists(firstName: Option[String], lastName: Option[String]) =
       from(artists)(a =>
-        where (          
-          (a.firstName === firstName.?) and 
+        where (
+          (a.firstName === firstName.?) and
           (a.lastName like lastName.?)
         )
         select(a)
       )
 
-// TODO: REFACTOR Z (reintroduce case statements tests) 
+// TODO: REFACTOR Z (reintroduce case statements tests)
   test("InTautology"){
 
     val q = artists.where(_.firstName in Nil).toList
@@ -1102,31 +1102,31 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
 
     passed('testAggregateComputeInSubQuery)
   }
-  
+
   test("OptionalOuterJoin"){
     val testInstance = sharedTestInstance; import testInstance._
     /*
-     * First we'll verify some preconditions Hossam must 
+     * First we'll verify some preconditions Hossam must
      * exist and have no CDs and Poncho must be related to at
      * least 2 CDs
      */
-    val hossam = join(artists, cds.leftOuter)((a,c) => 
+    val hossam = join(artists, cds.leftOuter)((a,c) =>
       where(a.id === hossamRamzy.id)
       select((a, c))
       on(a.id === c.map(_.mainArtist))).toList
     hossam.size should be (1)
     hossam.head._2 should be (None)
-    join(artists, cds)((a,c) => 
+    join(artists, cds)((a,c) =>
       where(a.id === ponchoSanchez.id)
       select((a, c))
       on(a.id === c.mainArtist)).toList.size should be > (1)
     /*
      * Since we know the hossam exists, a proper left outer join
      * should return at least 1 result
-     */ 
+     */
     val query1 = join(artists, cds.leftOuter.inhibitWhen(false))((a, c) =>
       where(a.id === hossamRamzy.id)
-      select((a,c)) 
+      select((a,c))
       on(c.map(_.mainArtist) === a.id))
     query1.toList.size should be > (0)
     /*
@@ -1135,17 +1135,17 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
      */
     val query2 = join(artists, cds.leftOuter.inhibitWhen(true))((a, c) =>
       where(a.id === ponchoSanchez.id)
-      select((a,c)) 
+      select((a,c))
       on(c.map(_.mainArtist) === a.id))
     query2.toList.size should be (1)
   }
-  
+
   test("Inhibit single LogicalBoolean"){
     from(artists)(a =>
       where((a.age === 1000000).inhibitWhen(true)) select(a)).toList.size should be > (0)
-    
+
   }
-  
+
   test("Inhibit one side of LogicalBoolean"){
     val testInstance = sharedTestInstance; import testInstance._
     //Left inhibit
@@ -1157,13 +1157,13 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
       where(a.id === hossamRamzy.id and (a.age === 1000000).inhibitWhen(true))
       select(a)).toList.size should be (1)
   }
-  
+
   test("Inhibit both sides of LogicalBoolean"){
     from(artists)(a =>
       where((a.age === 1000000).inhibitWhen(true) and (a.id between (999, 1000)).inhibitWhen(true))
       select(a)).toList.size should be > (0)
   }
-  
+
   test("Inhibit right hand side of enum"){
   }
 //  //class EnumE[A <: Enumeration#Value](val a: A) {

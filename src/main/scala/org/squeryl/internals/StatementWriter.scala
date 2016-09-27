@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,11 +33,11 @@ case class ConstantStatementParam(p: ConstantTypedExpression[_,_]) extends State
 case class FieldStatementParam(v: AnyRef, fmd: FieldMetaData) extends StatementParam
 /*
  * ParamWithMapper is a workadound to accomodate the ConstantExpressionNodeList, ideally 'in' and 'notIn' would grab the TEF in scope :
- * 
- * def in[A2,T2](t: Traversable[A2])(implicit cc: CanCompare[T1,T2], tef: TypedExpressionFactory[A2,T2]): LogicalBoolean =  
+ *
+ * def in[A2,T2](t: Traversable[A2])(implicit cc: CanCompare[T1,T2], tef: TypedExpressionFactory[A2,T2]): LogicalBoolean =
  *   new InclusionOperator(this, new RightHandSideOfIn(new zConstantExpressionNodeList(t, mapper)).toIn)
- * 
- * type inferencer doesn't like it, so I grab the mapper that is available, which is JDBC compatible, so in practive it should work 
+ *
+ * type inferencer doesn't like it, so I grab the mapper that is available, which is JDBC compatible, so in practive it should work
  * all the time...
  * */
 case class ConstantExpressionNodeListParam(v: AnyRef, l: ConstantExpressionNodeList[_]) extends StatementParam
@@ -58,9 +58,9 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
    * afterwards
    */
   def surrogate:StatementWriter = new StatementWriter(isForDisplay, databaseAdapter) {
-    
+
     indentWidth = outer.indentWidth
-    
+
     override def surrogate = outer.surrogate
 
     override def addParam(p: StatementParam) = outer.addParam(p)
@@ -79,9 +79,9 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
       statement
     else
       _paramList.mkString(statement+"\njdbcParams:[",",","]")
-  
+
   private val INDENT_INCREMENT = 2
-  
+
   private var indentWidth = 0
 
   def indent(width: Int) = indentWidth += width
@@ -91,16 +91,16 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
   def unindent: Unit = unindent(INDENT_INCREMENT)
 
   private def _dumpToConsole(s: String) = print(s)
-  
+
   private def _append(s: String) = {
     //_dumpToConsole(s)
     _flushPendingNextLine
     _stringBuilder.append(s)
   }
 
-  private def _writeIndentSpaces: Unit = 
+  private def _writeIndentSpaces: Unit =
     _writeIndentSpaces(indentWidth)
-  
+
   private def _writeIndentSpaces(c: Int) =
     for( i <- 1 to c)
       _append(" ")
@@ -122,7 +122,7 @@ class StatementWriter(val isForDisplay: Boolean, val databaseAdapter: DatabaseAd
       val lpl = pl.get
       lpl()
    }
-  
+
   def writeLines(s: String*) = {
     val size = s.size
     var c = 1

@@ -66,7 +66,7 @@ class MSSQLServer extends DatabaseAdapter {
       sw.write("with(updlock, rowlock)")
       sw.pushPendingNextLine
     }
-  
+
   override def writeConcatFunctionCall(fn: FunctionNode, sw: StatementWriter) =
     sw.writeNodesWithSeparator(fn.args, " + ", false)
 
@@ -143,7 +143,7 @@ class MSSQLServer extends DatabaseAdapter {
         super.writeQuery(qen, sw, false, Some(" TOP " + (beginOffset + pageSize) + " "))
       }
     }
-  
+
   private def _stripPrefix(selectE: String):String = {
     val i = selectE.lastIndexOf(" as ")
     selectE.substring(i + 4, selectE.length)

@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,7 +54,7 @@ trait ComputeStateStartOrWhereState[M]
 }
 
 trait WhereState[Cond]
-  extends GroupBySignatures 
+  extends GroupBySignatures
   with ComputeMeasuresSignaturesFromStartOrWhereState {
   self: QueryElements[_] =>
 
@@ -63,9 +63,9 @@ trait WhereState[Cond]
 
   def set(updateAssignments: UpdateAssignment*)(implicit cond: Cond =:= Conditioned) =
     new UpdateStatement(whereClause, updateAssignments)
-  
+
   def setAll(updateAssignments: UpdateAssignment*)(implicit cond: Cond =:= Unconditioned) =
-    new UpdateStatement(whereClause, updateAssignments)    
+    new UpdateStatement(whereClause, updateAssignments)
 }
 
 trait HavingState[G]

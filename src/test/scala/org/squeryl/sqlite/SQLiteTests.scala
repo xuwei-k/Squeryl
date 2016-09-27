@@ -9,12 +9,12 @@ import org.squeryl.{AbstractSession, Session}
 import java.sql.Connection
 
 /*
- * To run on command line : 
- * 
+ * To run on command line :
+ *
  * org.scalatest.tools.Runner -s org.squeryl.sqlite.SQLite_SchoolDb -eNDXEHLOW
- * 
+ *
  * org.scalatest.tools.Runner -s org.squeryl.sqlite.SQLite_SchoolDb -eNDXEHLOW -n SingleTestRun
- * 
+ *
  * */
 
 trait SQLite_ConnectionCommon extends DBConnector {

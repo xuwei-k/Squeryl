@@ -29,7 +29,7 @@ object LocalH2SinkStatisticsListener {
       using(s) {
         StatsSchema.create
       }
-      
+
     val l = new LocalH2SinkStatisticsListener(s)
     l
   }

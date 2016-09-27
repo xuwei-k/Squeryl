@@ -32,7 +32,7 @@ case class AutoIncremented(var nameOfSequence: Option[String]) extends ColumnAtt
   with AttributeValidOnNumericalColumn {
 
   override def hashCode = this.getClass.hashCode
-  
+
   override def equals(any: Any) =
     any.isInstanceOf[AutoIncremented]
 }
@@ -69,9 +69,9 @@ case class Unupdatable() extends ColumnAttribute
 
 case class Named(name: String) extends ColumnAttribute
         with AttributeValidOnNumericalColumn
-        with AttributeValidOnNonNumericalColumn        
-        
+        with AttributeValidOnNonNumericalColumn
+
 case class IsTransient() extends ColumnAttribute
         with AttributeValidOnNumericalColumn
         with AttributeValidOnNonNumericalColumn
-        
+

@@ -30,7 +30,7 @@ abstract class LogicalBooleanObjTests extends SchemaTester with RunTestsInsideTr
     val q0 = from(dummy)(d => where(LogicalBoolean.and(Seq()))
                                select(d)).toList
     q0 should have length(5)
-    
+
     val q1 = from(dummy)(d => where(LogicalBoolean.and(Seq(d.id===1)))
                               select(d)).toList
     q1 should have length(1)
@@ -41,7 +41,7 @@ abstract class LogicalBooleanObjTests extends SchemaTester with RunTestsInsideTr
     q2 should have length(2)
 
     val a3 = (d:Dummy) => LogicalBoolean.and(Seq(d.p1 === 1,
-                                                  d.p2===2, 
+                                                  d.p2===2,
                                                   d.id===2))
     val q3 = from(dummy)(d => where(a3(d))select(d)).toList
     q3 should have length(1)

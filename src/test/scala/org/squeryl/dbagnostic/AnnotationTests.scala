@@ -84,7 +84,7 @@ class AnnotationTests extends FunSuite with Matchers {
   class ToastersInc extends Schema()(PrimitiveTypeModeForTests) {
 
     import PrimitiveTypeModeForTests._
-    
+
     val descendantOfKeyedObjects = table[DescendantOfKeyedObject]
 
     val nailCutters = table[NailCutter]

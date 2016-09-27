@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2010 Maxime Lévesque
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ import scala.annotation.tailrec
  *  ExportSelectElement for a select element that refers to a SelectElement of an inner or outer query.
  *
  * SelectElementReference are nodes in any clause other than select (where, having, composite expression, order by, etc)
- *  that refer to a SelectElement  
+ *  that refer to a SelectElement
  */
 trait SelectElement extends ExpressionNode {
   outer =>
@@ -52,10 +52,10 @@ trait SelectElement extends ExpressionNode {
    *     (select t.x as z1 from t) q
    *
    * </pre>
-   */  
+   */
   def origin: QueryableExpressionNode
 
-  def parentQueryable = parent.get.asInstanceOf[QueryableExpressionNode]  
+  def parentQueryable = parent.get.asInstanceOf[QueryableExpressionNode]
 
   def resultSetMapper: ResultSetMapper
 
@@ -104,7 +104,7 @@ trait SelectElement extends ExpressionNode {
   def isActive = _isActive
 
   protected [squeryl] var _isActive = false
-  
+
   def expression: ExpressionNode
 
   /**
@@ -169,9 +169,9 @@ class FieldSelectElement
   override def aliasSegment: String =
     Session.currentSession.databaseAdapter.fieldAlias(origin, this)
     //origin.alias + "_" + fieldMetaData.columnName
-  
+
   val expression = new ExpressionNode {
-    
+
     def doWrite(sw: StatementWriter) =
       sw.write(sw.quoteName(alias))
   }
@@ -187,10 +187,10 @@ class FieldSelectElement
       resultSetMapper.isActive = true
       _isActive = true
     }
-  
+
   def typeOfExpressionToString =
     fieldMetaData.displayType
-  
+
   override def toString =
     'FieldSelectElement + ":" +
        Utils.failSafeString(alias, fieldMetaData.nameOfProperty)
@@ -205,14 +205,14 @@ class ValueSelectElement
   var yieldPusher: Option[YieldValuePusher] = None
 
   def prepareColumnMapper(index: Int) =
-    yieldPusher = Some(new YieldValuePusher(index, this, mapper))  
+    yieldPusher = Some(new YieldValuePusher(index, this, mapper))
 
   def typeOfExpressionToString =
     if(yieldPusher == None)
       "unknown"
     else
       yieldPusher.get.selectElement.typeOfExpressionToString
-  
+
   override def prepareMapper(jdbcIndex: Int) =
     if(yieldPusher != None) {
       resultSetMapper.addYieldValuePusher(yieldPusher.get)
@@ -221,7 +221,7 @@ class ValueSelectElement
     }
 
   override def toString =
-    'ValueSelectElement + ":" + expression.writeToString  
+    'ValueSelectElement + ":" + expression.writeToString
 }
 
 /**
@@ -232,7 +232,7 @@ class ValueSelectElement
 class SelectElementReference[A,T]
   (val selectElement: SelectElement, val mapper: OutMapper[A])
     extends TypedExpression[A,T] {
-    
+
   override def toString =
     'SelectElementReference + ":" + Utils.failSafeString(delegateAtUseSite.alias) + ":" + selectElement.typeOfExpressionToString + inhibitedFlagForAstDump
 
@@ -240,17 +240,17 @@ class SelectElementReference[A,T]
     selectElement.inhibited
 
   private def _useSite: QueryExpressionNode[_] = {
-    
+
     def findQueryExpressionNode(e: ExpressionNode): QueryExpressionNode[_] = e match {
       case qe: QueryExpressionNode[_] => qe
       case _ =>
         e.parent match {
           case Some(e_) => findQueryExpressionNode(e_)
-          case _ => 
+          case _ =>
             org.squeryl.internals.Utils.throwError("could not determine use site of "+ this)
         }
     }
-    
+
     findQueryExpressionNode(this)
   }
 

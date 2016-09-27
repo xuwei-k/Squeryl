@@ -21,7 +21,7 @@ import org.squeryl.{Queryable, Query}
 
 trait JoinSignatures {
   self: FromSignatures =>
-  
+
   class JoinPrecursor[A](q: Queryable[A]) {
     def leftOuter = new OuterJoinedQueryable[A](q, "left")
     def rightOuter = new OuterJoinedQueryable[A](q, "right")
@@ -53,7 +53,7 @@ trait JoinSignatures {
       (a:A,b1:B1,b2:B2,b3:B3,b4:B4) => f(a,b1,b2,b3,b4).queryYield
     )
 
-  def join[A,B1,B2,B3,B4,B5,C](          
+  def join[A,B1,B2,B3,B4,B5,C](
           q: Queryable[A],
           q1: JoinedQueryable[B1],
           q2: JoinedQueryable[B2],
