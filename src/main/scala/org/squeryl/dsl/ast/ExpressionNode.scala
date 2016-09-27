@@ -152,10 +152,10 @@ class BinaryOperatorNodeLogicalBoolean(left: ExpressionNode, right: ExpressionNo
 
   override def inhibited = _inhibitedByWhen || {
     left match {
-    	case _: LogicalBoolean =>
-    		left.inhibited && right.inhibited
-    	case _ =>
-    		left.inhibited || right.inhibited
+      case _: LogicalBoolean =>
+        left.inhibited && right.inhibited
+      case _ =>
+        left.inhibited || right.inhibited
     }
   }
 

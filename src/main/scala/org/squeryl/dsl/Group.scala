@@ -40,5 +40,5 @@ class GroupWithMeasures[K,M](k: K, m: M) {
 }
 
 object GroupWithMeasures {
-	def unapply[K, M](x: GroupWithMeasures[K, M]) = Some((x.key, x.measures))
+  def unapply[K, M](x: GroupWithMeasures[K, M]) = Some((x.key, x.measures))
 }

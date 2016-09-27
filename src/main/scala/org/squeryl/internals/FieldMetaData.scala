@@ -414,10 +414,11 @@ object FieldMetaData {
                case _ => None
              }
            } orElse {
-	             getter flatMap { _.invoke(sampleInstance4OptionTypeDeduction, _EMPTY_ARRAY : _*) match {
-	               case a: AnyRef => Some(a)
-	               case _ => None
-	             }
+             getter.flatMap {
+               _.invoke(sampleInstance4OptionTypeDeduction, _EMPTY_ARRAY : _*) match {
+                 case a: AnyRef => Some(a)
+                 case _ => None
+               }
              }
            } getOrElse
             createDefaultValue(fieldMapper, member, clsOfField, Some(typeOfField), colAnnotation)
@@ -594,38 +595,38 @@ object FieldMetaData {
          if(ann.optionType != classOf[Object])
            Some(createDefaultValue(fieldMapper, member, ann.optionType, None, None))
           else None).orElse{
-	      /*
-	       * Next we'll try the Java generic type.  This will fail if the generic parameter is a primitive as
-	       * we'll see Object instead of scala.X
-	       */
-	      t match {
-	        case Some(pt: ParameterizedType) => {
-	          pt.getActualTypeArguments.toList match {
-	            case oType :: Nil => {
-	              if(classOf[Class[_]].isInstance(oType)) {
-	                /*
-	                 * Primitive types are seen by Java reflection as classOf[Object],
-	                 * if that's what we find then we need to get the real value from @ScalaSignature
-	                 */
-	                val trueTypeOption =
-	                  if (classOf[Object] == oType) optionTypeFromScalaSig(member)
-	                  else Some(oType.asInstanceOf[Class[_]])
-	                trueTypeOption flatMap { trueType =>
-	                  val deduced = createDefaultValue(fieldMapper, member, trueType, None, optionFieldsInfo)
-	                  if (deduced != null)
-	                    Some(deduced)
-	                  else
-	                    None //Couldn't create default for type param
-	                }
-	              } else{
-	            	  None //Type parameter is not a Class
-	              }
-	            }
-	            case _ => None //Not a single type parameter
-	          }
-	        }
-	        case _ => None //Not a parameterized type
-	      }
+        /*
+         * Next we'll try the Java generic type.  This will fail if the generic parameter is a primitive as
+         * we'll see Object instead of scala.X
+         */
+        t match {
+          case Some(pt: ParameterizedType) => {
+            pt.getActualTypeArguments.toList match {
+              case oType :: Nil => {
+                if(classOf[Class[_]].isInstance(oType)) {
+                  /*
+                   * Primitive types are seen by Java reflection as classOf[Object],
+                   * if that's what we find then we need to get the real value from @ScalaSignature
+                   */
+                  val trueTypeOption =
+                    if (classOf[Object] == oType) optionTypeFromScalaSig(member)
+                    else Some(oType.asInstanceOf[Class[_]])
+                  trueTypeOption flatMap { trueType =>
+                    val deduced = createDefaultValue(fieldMapper, member, trueType, None, optionFieldsInfo)
+                    if (deduced != null)
+                      Some(deduced)
+                    else
+                      None //Couldn't create default for type param
+                  }
+                } else{
+                  None //Type parameter is not a Class
+                }
+              }
+              case _ => None //Not a single type parameter
+            }
+          }
+          case _ => None //Not a parameterized type
+        }
       }
     }
     else {
