@@ -49,7 +49,7 @@ class MusicDbObject extends KeyedEntity[Int] {
 }
 
 @SerialVersionUID(7397250327804824253L)
-class Person(var firstName:String, var lastName: String, val age: Option[Int], val created: Option[Timestamp] = None) 
+class Person(var firstName:String, var group: String, val age: Option[Int], val created: Option[Timestamp] = None) 
   extends MusicDbObject with java.io.Serializable {
   def this() = this("", "", None)
 }
@@ -267,7 +267,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     )((s,a) =>
       where(s.authorId === a.id or s.interpretId === a.id)
       select(a)
-      orderBy(a.lastName desc)
+      orderBy(a.group desc)
     ).distinct
 
   def songsFeaturingPonchoNestedInWhereWithString =
@@ -380,7 +380,7 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
 
     validateQuery('basicSelectUsingWhereOnQueryableNested, basicSelectUsingWhereOnQueryableNested, (a:Person)=>a.id, List(mongoSantaMaria.id))
 
-    validateQuery('poncho, poncho, (a:Person)=>a.lastName, List(ponchoSanchez.lastName))
+    validateQuery('poncho, poncho, (a:Person)=>a.group, List(ponchoSanchez.group))
 
     val ponchoSongs = List(besameMama.title, freedomSound.title, watermelonMan.title)
 
@@ -421,12 +421,12 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
       )(a =>   select(a))
 
     def selfJoinNested4LevelPartialSelect =
-      from(selfJoinNested3Level)(a => where(a.id gt -1) select(a.lastName))
+      from(selfJoinNested3Level)(a => where(a.id gt -1) select(a.group))
 
     validateQuery('selfJoinNested4LevelPartialSelect, selfJoinNested4LevelPartialSelect,
-      identity[String], List(ponchoSanchez.lastName))
+      identity[String], List(ponchoSanchez.group))
 
-    validateQuery('selfJoinNested3Level, selfJoinNested3Level, (a:Person)=>a.lastName, List(ponchoSanchez.lastName))
+    validateQuery('selfJoinNested3Level, selfJoinNested3Level, (a:Person)=>a.group, List(ponchoSanchez.group))
 
     validateQuery('songCountPerAlbumIdJoinedWithAlbum, songCountPerAlbumIdJoinedWithAlbum,
       (t:(String,Long)) => (t._1,t._2),
@@ -684,10 +684,10 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     val testInstance = sharedTestInstance; import testInstance._
 
     var ac = artists.where(a=> a.id === alainCaron.id).single
-    ac.lastName = "Karon"
+    ac.group = "Karon"
     artists.update(ac)
     ac = artists.where(a=> a.id === alainCaron.id).single
-    assert(ac.lastName == "Karon", 'testUpdate1 + " failed, expected Karon, got " + ac.lastName)
+    assert(ac.group == "Karon", 'testUpdate1 + " failed, expected Karon, got " + ac.group)
     passed('testUpdate1 )
   }
 
@@ -989,11 +989,11 @@ abstract class MusicDbTestRun extends SchemaTester with QueryTester with RunTest
     from(artists)(a => select(&(nvl(a.age,0)))).toList : List[Int]
   }
 
-  def dynamicWhereOnArtists(firstName: Option[String], lastName: Option[String]) =
+  def dynamicWhereOnArtists(firstName: Option[String], group: Option[String]) =
       from(artists)(a =>
         where (          
           (a.firstName === firstName.?) and 
-          (a.lastName like lastName.?)
+          (a.group like group.?)
         )
         select(a)
       )
