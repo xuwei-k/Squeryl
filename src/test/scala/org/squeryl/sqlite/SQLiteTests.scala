@@ -69,6 +69,7 @@ class SQLite_MusicDb extends musicdb.MusicDbTestRun with SQLite_Connection {
     "UpperAndLowerFuncs"
   )
 }
+class SQLite_ReservedWordsTest extends ReservedWordsTest with SQLite_Connection
 class SQLite_LeftJoinTest extends LeftJoinTest with SQLite_Connection
 class SQLite_ConnectionClosing extends ConnectionClosingTest with SQLite_Connection {
   def dbSpecificSelectNow: String = "select CURRENT_TIMESTAMP"
@@ -104,6 +105,7 @@ class SQLite_LazyMusicDb extends musicdb.MusicDbTestRun with SQLite_LazyConnecti
     "UpperAndLowerFuncs"
   )
 }
+class SQLite_LazyReservedWordsTest extends ReservedWordsTest with SQLite_LazyConnection
 class SQLite_LazyLeftJoinTest extends LeftJoinTest with SQLite_LazyConnection
 class SQLite_LazyConnectionClosing extends ConnectionClosingTest with SQLite_LazyConnection {
   def dbSpecificSelectNow: String = "select CURRENT_TIMESTAMP"

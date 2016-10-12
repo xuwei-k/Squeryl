@@ -117,4 +117,6 @@ class SQLiteAdapter extends DatabaseAdapter {
     sw.write(" LIKE ?)")
     sw.addParam(ConstantStatementParam(InternalFieldMapper.stringTEF.createConstant(pattern)))
   }
+
+  override def quoteIdentifier(s: String) = "`" + s + "`"
 }

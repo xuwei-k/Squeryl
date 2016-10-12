@@ -40,6 +40,7 @@ class Postgresql_SchoolDb extends schooldb.SchoolDbTestRun with Postgresql_Conne
 //class Postgresql_TestCustomTypesMode extends customtypes.TestCustomTypesMode with Postgresql_Connection
 class Postgresql_KickTheTires extends demo.KickTheTires with Postgresql_Connection
 class Postgresql_MusicDb extends musicdb.MusicDbTestRun with Postgresql_Connection
+class Postgresql_ReservedWordsTest extends ReservedWordsTest with Postgresql_Connection
 class Postgresql_LeftJoinTest extends LeftJoinTest with Postgresql_Connection
 class Postgresql_ConnectionClosing extends ConnectionClosingTest with Postgresql_Connection {
   def dbSpecificSelectNow: String = "select now()"
