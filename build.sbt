@@ -156,3 +156,15 @@ libraryDependencies ++= {
       Nil
   }
 }
+
+Compile / sourceGenerators += task {
+  val dir = (Compile / sourceManaged).value
+  val file = dir / "org" / "squeryl" / "dsl" / "boilerplate" / "JoinSignatures.scala"
+  IO.write(file, JoinSignatures.value)
+  Seq(file)
+}
+
+mappings in (Compile, packageSrc) ++= (managedSources in Compile).value.map{ f =>
+  // to merge generated sources into sources.jar as well
+  (f, f.relativeTo((sourceManaged in Compile).value).get.getPath)
+}
